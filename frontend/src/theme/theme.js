@@ -47,8 +47,13 @@ const presetPalettes = {
   emerald: { primary: '#10B981', secondary: '#06B6D4' },
 }
 
-export const getTheme = (mode = 'dark', preset = 'ocean') => {
-  const colors = presetPalettes[preset] || presetPalettes.ocean
+export const getTheme = (mode = 'dark', preset = 'ocean', primaryColor = null, secondaryColor = null) => {
+  let colors
+  if (primaryColor && secondaryColor) {
+    colors = { primary: primaryColor, secondary: secondaryColor }
+  } else {
+    colors = presetPalettes[preset] || presetPalettes.ocean
+  }
   const theme = createTheme({
     palette: {
       mode,

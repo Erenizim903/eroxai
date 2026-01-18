@@ -59,10 +59,10 @@ const Navbar = () => {
             <TranslateIcon color="primary" />
           )}
           <Typography variant="h6" fontWeight={700}>
-            {siteSettings?.site_name || 'EroxAI Studio'}
+            {siteSettings?.site_name || 'EroxAI'}
           </Typography>
         </Stack>
-        <Stack direction="row" spacing={1} alignItems="center">
+        <Stack direction="row" spacing={1} alignItems="center" sx={{ flexWrap: 'wrap', gap: 1 }}>
           {navItems
             .filter((item) => (item.to === '/admin-panel' ? user?.is_staff : true))
             .map((item) => (
@@ -71,6 +71,11 @@ const Navbar = () => {
                 component={RouterLink}
                 to={item.to}
                 color={location.pathname === item.to ? 'primary' : 'inherit'}
+                sx={{ 
+                  fontSize: { xs: '0.75rem', sm: '0.875rem' },
+                  px: { xs: 1, sm: 2 },
+                  display: { xs: item.to === '/themes' ? 'none' : 'flex' }
+                }}
               >
                 {t(item.labelKey)}
               </Button>
@@ -87,9 +92,6 @@ const Navbar = () => {
               </Button>
             ))}
           </Box>
-          <IconButton onClick={toggleTheme} color="inherit">
-            {mode === 'dark' ? <LightModeIcon /> : <DarkModeIcon />}
-          </IconButton>
           {isAuthenticated ? (
             <Button variant="outlined" onClick={logout}>
               Çıkış

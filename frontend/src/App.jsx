@@ -15,11 +15,15 @@ import Profile from './pages/Profile'
 import Themes from './pages/Themes'
 import AIChat from './pages/AIChat'
 import ChatBot from './components/common/ChatBot'
+import { useSiteStore } from './store/useSiteStore'
 
 function App() {
   const mode = useAppStore((state) => state.mode)
-  const themePreset = useAppStore((state) => state.themePreset)
-  const theme = useMemo(() => getTheme(mode, themePreset), [mode, themePreset])
+  const siteSettings = useSiteStore((state) => state.settings)
+  const themePreset = siteSettings?.theme_preset || useAppStore((state) => state.themePreset)
+  const primaryColor = siteSettings?.theme_primary_color || '#667eea'
+  const secondaryColor = siteSettings?.theme_secondary_color || '#764ba2'
+  const theme = useMemo(() => getTheme(mode, themePreset, primaryColor, secondaryColor), [mode, themePreset, primaryColor, secondaryColor])
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated)
   const user = useAuthStore((state) => state.user)
   const loadMe = useAuthStore((state) => state.loadMe)
@@ -52,7 +56,7 @@ function App() {
         <Route
           path="/themes"
           element={
-            <ProtectedRoute>
+            <ProtectedRoute requireAdmin>
               <Themes />
             </ProtectedRoute>
           }

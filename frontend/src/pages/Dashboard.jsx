@@ -28,10 +28,12 @@ import { createPremiumRequest, getMyPremiumRequests } from '../services/premiumR
 import { listTemplates, fillTemplate } from '../services/templateService'
 import DocumentTranslatePanel from '../components/user/DocumentTranslatePanel'
 import BlankPagePanel from '../components/user/BlankPagePanel'
+import AreaCalculatorPanel from '../components/user/AreaCalculatorPanel'
 import KeyIcon from '@mui/icons-material/Key'
 import DescriptionIcon from '@mui/icons-material/Description'
 import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome'
 import NoteAddIcon from '@mui/icons-material/NoteAdd'
+import CalculateIcon from '@mui/icons-material/Calculate'
 import SendIcon from '@mui/icons-material/Send'
 import CheckCircleIcon from '@mui/icons-material/CheckCircle'
 import PendingIcon from '@mui/icons-material/Pending'
@@ -302,6 +304,11 @@ const Dashboard = () => {
               iconPosition="start"
               label={i18n.language === 'tr' ? 'Boş Sayfa' : i18n.language === 'ja' ? '空白ページ' : 'Blank Page'}
               disabled={!isPremium}
+            />
+            <Tab
+              icon={<CalculateIcon />}
+              iconPosition="start"
+              label={i18n.language === 'tr' ? 'Subo Hesaplama' : i18n.language === 'ja' ? '坪計算' : 'Area Calculator'}
             />
           </Tabs>
         </Card>
@@ -833,6 +840,16 @@ const Dashboard = () => {
             <Grid item xs={12}>
               <FloatingCard delay={0}>
                 <BlankPagePanel />
+              </FloatingCard>
+            </Grid>
+          </Grid>
+        )}
+
+        {activeTab === 4 && (
+          <Grid container spacing={3}>
+            <Grid item xs={12}>
+              <FloatingCard delay={0}>
+                <AreaCalculatorPanel />
               </FloatingCard>
             </Grid>
           </Grid>

@@ -28,10 +28,10 @@ const ChatBot = () => {
     {
       role: 'assistant',
       content: i18n.language === 'tr' 
-        ? 'Merhaba! EroxAI Document Studio hakkında size nasıl yardımcı olabilirim?'
+        ? 'Merhaba! EroxAI Studio hakkında size nasıl yardımcı olabilirim?'
         : i18n.language === 'ja'
-        ? 'こんにちは！EroxAI Document Studioについて、どのようにお手伝いできますか？'
-        : 'Hello! How can I help you with EroxAI Document Studio?',
+        ? 'こんにちは！EroxAI Studioについて、どのようにお手伝いできますか？'
+        : 'Hello! How can I help you with EroxAI Studio?',
     },
   ])
   const [input, setInput] = useState('')

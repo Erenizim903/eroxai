@@ -177,7 +177,7 @@ class TemplateField(models.Model):
 
 
 class SiteSettings(models.Model):
-    site_name = models.CharField(max_length=120, default="EroxAI Document Studio")
+    site_name = models.CharField(max_length=120, default="EroxAI")
     logo = models.ImageField(upload_to="branding/", null=True, blank=True)
     contact_email = models.CharField(max_length=120, blank=True)
     contact_phone = models.CharField(max_length=60, blank=True)
@@ -185,7 +185,7 @@ class SiteSettings(models.Model):
     address = models.TextField(blank=True)
     hero_title = models.CharField(max_length=200, blank=True)
     hero_subtitle = models.TextField(blank=True)
-    copyright_text = models.CharField(max_length=200, default="© 2026 EroxAI Document Studio. Tüm hakları saklıdır.")
+    copyright_text = models.CharField(max_length=200, default="© 2026 EroxAI Studio. Tüm hakları saklıdır.")
     social_facebook = models.CharField(max_length=200, blank=True)
     social_instagram = models.CharField(max_length=200, blank=True)
     social_twitter = models.CharField(max_length=200, blank=True)
@@ -200,5 +200,18 @@ class SiteSettings(models.Model):
     blackbox_endpoint = models.CharField(max_length=500, default="https://www.blackbox.ai/api/chat", blank=True)
     # AI Chat Provider (openai, deepseek, blackbox)
     chat_provider = models.CharField(max_length=20, default="openai", blank=True)
+    # Theme Settings (sadece admin ayarlayabilir)
+    theme_primary_color = models.CharField(max_length=20, default="#667eea", blank=True)
+    theme_secondary_color = models.CharField(max_length=20, default="#764ba2", blank=True)
+    theme_preset = models.CharField(max_length=20, default="ocean", blank=True)
+    # Site Content Texts (Admin Panelden Yönetilebilir - TR/EN/JA)
     site_texts = models.JSONField(default=dict, blank=True)
+    # Homepage Sections (Hero, Features, About, etc.)
+    homepage_sections = models.JSONField(default=dict, blank=True)
+    # Chat UI Texts
+    chat_texts = models.JSONField(default=dict, blank=True)
+    # Navigation & Common Texts
+    navigation_texts = models.JSONField(default=dict, blank=True)
+    # Dashboard & User Panel Texts
+    dashboard_texts = models.JSONField(default=dict, blank=True)
     updated_at = models.DateTimeField(auto_now=True)

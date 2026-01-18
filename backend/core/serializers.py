@@ -133,7 +133,14 @@ class SiteSettingsSerializer(serializers.ModelSerializer):
             "deepseek_endpoint",
             "blackbox_endpoint",
             "chat_provider",
+            "theme_primary_color",
+            "theme_secondary_color",
+            "theme_preset",
             "site_texts",
+            "homepage_sections",
+            "chat_texts",
+            "navigation_texts",
+            "dashboard_texts",
         )
 
 

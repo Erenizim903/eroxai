@@ -74,7 +74,7 @@ const Footer = () => {
           <Grid item xs={12} md={4}>
             <Stack spacing={3}>
               <Typography variant="h5" sx={{ fontWeight: 800, color: 'white', mb: 1 }}>
-                {siteSettings?.site_name || 'EroxAI Document Studio'}
+                {siteSettings?.site_name ? (siteSettings.site_name === 'EroxAI' ? 'EroxAI Studio' : siteSettings.site_name) : 'EroxAI Studio'}
               </Typography>
               <Typography variant="body2" sx={{ color: alpha('#fff', 0.7), lineHeight: 1.8 }}>
                 {t('footer.tagline')}
@@ -209,7 +209,7 @@ const Footer = () => {
         <Divider sx={{ my: 6, borderColor: alpha('#667eea', 0.2) }} />
         <Box sx={{ textAlign: 'center' }}>
           <Typography variant="body2" sx={{ color: alpha('#fff', 0.6) }}>
-            {siteSettings?.copyright_text || '© 2026 EroxAI Document Studio. Tüm hakları saklıdır.'}
+            {siteSettings?.copyright_text || '© 2026 EroxAI Studio. Tüm hakları saklıdır.'}
           </Typography>
         </Box>
       </Container>

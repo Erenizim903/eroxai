@@ -536,13 +536,13 @@ const Home = () => {
                 {
                   num: 2,
                   title: 'Belge Yükle ve İşle',
-                  desc: 'PDF, Excel veya görsel dosyanızı yükleyin. OCR ile metin çıkarma veya çeviri işlemini başlatın. İşlemler gerçek zamanlı olarak takip edilir.',
+                  desc: 'Hazır şablonlardan birini seçin veya yeni bir şablon oluşturun. PDF, Excel veya boş sayfa formatlarını destekler.',
                   color: '#11998e',
                 },
                 {
                   num: 3,
                   title: 'Sonuçları İndir',
-                  desc: 'OCR veya çeviri işlemini tamamlayın. Sonucu görüntüleyin, düzenleyin ve dilediğiniz formatta (PDF, TXT, DOCX) indirin.',
+                  desc: 'İhtiyacınız olan bilgileri girin. Sistem otomatik olarak Japonca formata dönüştürür ve hazır belgeyi oluşturur.',
                   color: '#f5576c',
                 },
               ].map((item, idx) => (
@@ -786,13 +786,13 @@ const Home = () => {
                           Platform Hakkında
                         </Typography>
                         <Typography variant="body1" sx={{ color: alpha('#fff', 0.8), lineHeight: 1.9, fontSize: '1.05rem' }}>
-                          EroxAI Document Studio, 2026 yılında geliştirilen modern bir doküman işleme platformudur.
-                          OCR ve çeviri işlemlerini tek bir platformda birleştirerek kullanıcıların iş akışlarını
-                          kolaylaştırmayı hedefler.
+                          EroxAI Studio, 2026 yılında geliştirilen profesyonel belge oluşturma platformudur.
+                          Fiş kesme, sözleşme doldurma, zehirli atık belgeleri ve diğer resmi evrakları 
+                          hızlı ve kolay bir şekilde oluşturmanızı sağlar.
                         </Typography>
                         <Typography variant="body1" sx={{ color: alpha('#fff', 0.8), lineHeight: 1.9, fontSize: '1.05rem' }}>
-                          Platform, kullanıcı dostu arayüzü, gelişmiş OCR teknolojisi ve çok dilli çeviri desteği ile
-                          öne çıkar.
+                          Platform, hazır şablonlar, otomatik Japonca format dönüşümü ve kullanıcı dostu arayüzü ile
+                          iş süreçlerinizi hızlandırır.
                         </Typography>
                       </Stack>
                     </CardContent>
@@ -902,14 +902,14 @@ const Home = () => {
             </motion.div>
             <Grid container spacing={3}>
               {[
-                { title: 'OCR Teknolojisi', status: 'Aktif', progress: 100, color: '#10B981' },
-                { title: 'Çeviri Sistemi', status: 'Aktif', progress: 100, color: '#10B981' },
+                { title: 'Belge Şablon Sistemi', status: 'Aktif', progress: 100, color: '#10B981' },
+                { title: 'Japonca Format Dönüşümü', status: 'Aktif', progress: 100, color: '#10B981' },
+                { title: 'Fiş/Sözleşme Modülleri', status: 'Aktif', progress: 100, color: '#10B981' },
+                { title: 'Zehirli Atık Belge Sistemi', status: 'Aktif', progress: 100, color: '#10B981' },
                 { title: 'Admin Panel', status: 'Aktif', progress: 100, color: '#10B981' },
-                { title: 'Kullanıcı Paneli', status: 'Aktif', progress: 100, color: '#10B981' },
-                { title: 'API Entegrasyonları', status: 'Geliştirme Aşamasında', progress: 75, color: '#F59E0B' },
+                { title: 'Gelişmiş Şablon Editörü', status: 'Geliştirme Aşamasında', progress: 75, color: '#F59E0B' },
+                { title: 'Toplu Belge Oluşturma', status: 'Geliştirme Aşamasında', progress: 60, color: '#F59E0B' },
                 { title: 'Mobil Uygulama', status: 'Planlanıyor', progress: 20, color: '#EF4444' },
-                { title: 'Gelişmiş Analitik', status: 'Geliştirme Aşamasında', progress: 60, color: '#F59E0B' },
-                { title: 'Yapay Zeka Özellikleri', status: 'Planlanıyor', progress: 30, color: '#EF4444' },
               ].map((item, idx) => (
                 <Grid key={idx} item xs={12} md={6}>
                   <FloatingCard delay={idx * 0.1}>

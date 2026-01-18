@@ -10,49 +10,49 @@
   },
   "home": {
     "hero": {
-      "title": "Belge Çeviri Stüdyosu",
-      "subtitle": "OCR ve çeviri süreçlerini tek panelde yönet, sonuçları anında indir.",
+      "title": "Profesyonel Belge Oluşturma Platformu",
+      "subtitle": "Fiş, sözleşme, zehirli atık belgeleri ve tüm resmi evrakları hızlıca oluşturun ve doldurun.",
       "ctaPrimary": "Hemen Başla",
       "ctaSecondary": "Daha Fazlası",
       "demo": "Örnek Akış",
-      "demoTitle": "PDF'den OCR + Çeviri",
-      "demoDesc": "Belgeni yükle, OCR metnini çıkar, hedef dile dönüştür ve çıktıyı indir."
+      "demoTitle": "Belge Oluşturma ve Doldurma",
+      "demoDesc": "Şablon seç, alanları doldur, Japonca formatında profesyonel belge oluştur."
     },
     "features": {
       "kicker": "Özellikler",
-      "title": "Tek Panelde Tüm İş Akışı",
-      "subtitle": "Tüm süreçler tarayıcıda, harici sunucu gerekmeden.",
+      "title": "Tek Platformda Tüm Belge İşlemleri",
+      "subtitle": "Fiş, sözleşme, zehirli atık belgeleri ve daha fazlası tek çatı altında.",
       "ocr": {
-        "title": "Gelişmiş OCR",
-        "desc": "PDF ve görsellerden metin çıkar; sayfa bazlı ilerlemeyi izle."
+        "title": "Belge Şablonları",
+        "desc": "Hazır şablonlardan seç veya kendi şablonunu oluştur. PDF, Excel veya boş sayfa desteği."
       },
       "translate": {
-        "title": "Çok Dilli Çeviri",
-        "desc": "LibreTranslate ile 8+ dilde çeviri ve hızlı çıktı."
+        "title": "Otomatik Japonca Formatı",
+        "desc": "Girdiğin tüm bilgiler otomatik olarak Japonca formata çevrilir ve standart belgeler oluşturulur."
       },
       "fast": {
         "title": "Hızlı ve Güvenli",
-        "desc": "Veriler tarayıcıda işlenir, gizlilik kontrolü sende."
+        "desc": "Profesyonel belgeler anında oluşturulur. Tüm veriler güvenli şekilde işlenir."
       }
     },
     "steps": {
       "kicker": "Nasıl Çalışır?",
       "title": "3 Adımda Hazır",
-      "subtitle": "Hiç backend kurmadan, doğrudan web'e yükle.",
+      "subtitle": "Premium key'inizle profesyonel belgeler oluşturun.",
       "step1": {
         "label": "Adım 1",
-        "title": "Dosya Yükle",
-        "desc": "PDF veya görseli sürükleyip bırak."
+        "title": "Şablon Seç",
+        "desc": "Fiş, sözleşme, zehirli atık belgesi veya diğer şablonlardan birini seç."
       },
       "step2": {
         "label": "Adım 2",
-        "title": "OCR + Çeviri",
-        "desc": "OCR çıktısını al, hedef dili seç ve çevir."
+        "title": "Alanları Doldur",
+        "desc": "İhtiyacın olan bilgileri gir. Sistem otomatik olarak Japonca formata dönüştürür."
       },
       "step3": {
         "label": "Adım 3",
-        "title": "Çıktıyı İndir",
-        "desc": "Metni indir ya da geçmişe kaydet."
+        "title": "Belgeyi İndir",
+        "desc": "Hazır belgeyi PDF veya Excel formatında indir."
       }
     },
     "contact": {
@@ -72,7 +72,7 @@
     }
   },
   "footer": {
-    "tagline": "Tarayıcı tabanlı OCR + Çeviri platformu.",
-    "powered": "EroxAI tarafından desteklenir."
+    "tagline": "Profesyonel belge oluşturma ve form doldurma platformu.",
+    "powered": "EroxAI Studio tarafından desteklenir."
   }
 }

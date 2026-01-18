@@ -49,10 +49,10 @@ const AIChat = () => {
     {
       role: 'assistant',
       content: i18n.language === 'tr'
-        ? 'Merhaba! Ben AI asistanınız. Size nasıl yardımcı olabilirim?'
+        ? 'Merhaba! Ben EroxAI Studio AI asistanınız. Size nasıl yardımcı olabilirim?'
         : i18n.language === 'ja'
-        ? 'こんにちは！私はAIアシスタントです。どのようにお手伝いできますか？'
-        : 'Hello! I am your AI assistant. How can I help you?',
+        ? 'こんにちは！私はEroxAI StudioのAIアシスタントです。どのようにお手伝いできますか？'
+        : 'Hello! I am your EroxAI Studio AI assistant. How can I help you?',
     },
   ])
   const [input, setInput] = useState('')
@@ -133,17 +133,17 @@ const AIChat = () => {
                     WebkitTextFillColor: 'transparent',
                   }}
                 >
-                  {i18n.language === 'tr' ? 'AI Sohbet' : i18n.language === 'ja' ? 'AIチャット' : 'AI Chat'}
+                  {i18n.language === 'tr' ? 'EroxAI Studio AI Sohbet' : i18n.language === 'ja' ? 'EroxAI Studio AIチャット' : 'EroxAI Studio AI Chat'}
                 </AnimatedText>
                 <AnimatedText
                   variant="body1"
                   sx={{ color: alpha('#fff', 0.7), delay: 0.2 }}
                 >
                   {i18n.language === 'tr'
-                    ? 'Yapay zeka asistanı ile sohbet edin'
+                    ? 'EroxAI Studio yapay zeka asistanı ile sohbet edin'
                     : i18n.language === 'ja'
-                    ? 'AIアシスタントとチャットする'
-                    : 'Chat with AI assistant'}
+                    ? 'EroxAI StudioのAIアシスタントとチャットする'
+                    : 'Chat with EroxAI Studio AI assistant'}
                 </AnimatedText>
               </Box>
             </Stack>
@@ -203,7 +203,7 @@ const AIChat = () => {
                   <Stack direction="row" spacing={2} alignItems="center">
                     <SmartToyIcon sx={{ color: 'white' }} />
                     <Typography variant="h6" sx={{ color: 'white', fontWeight: 700 }}>
-                      {i18n.language === 'tr' ? 'AI Asistan' : i18n.language === 'ja' ? 'AIアシスタント' : 'AI Assistant'}
+                      {i18n.language === 'tr' ? 'EroxAI Studio AI Asistan' : i18n.language === 'ja' ? 'EroxAI Studio AIアシスタント' : 'EroxAI Studio AI Assistant'}
                     </Typography>
                   </Stack>
                   <Chip

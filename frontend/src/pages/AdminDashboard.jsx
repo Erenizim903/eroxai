@@ -110,6 +110,9 @@ const AdminDashboard = () => {
     deepseek_endpoint: 'https://api.deepseek.com/v1/chat/completions',
     blackbox_endpoint: 'https://www.blackbox.ai/api/chat',
     chat_provider: 'openai',
+    theme_primary_color: '#667eea',
+    theme_secondary_color: '#764ba2',
+    theme_preset: 'ocean',
     logo: null,
   })
   const [newTemplate, setNewTemplate] = useState({
@@ -326,6 +329,9 @@ const AdminDashboard = () => {
     payload.append('deepseek_endpoint', siteSettings.deepseek_endpoint || '')
     payload.append('blackbox_endpoint', siteSettings.blackbox_endpoint || '')
     payload.append('chat_provider', siteSettings.chat_provider || 'openai')
+    payload.append('theme_primary_color', siteSettings.theme_primary_color || '#667eea')
+    payload.append('theme_secondary_color', siteSettings.theme_secondary_color || '#764ba2')
+    payload.append('theme_preset', siteSettings.theme_preset || 'ocean')
     if (siteSettings.logo) {
       payload.append('logo', siteSettings.logo)
     }
@@ -407,10 +413,10 @@ const AdminDashboard = () => {
   return (
     <Box>
       <Navbar />
-      <Container maxWidth="xl" sx={{ py: 4 }}>
-        <Grid container spacing={3}>
+      <Container maxWidth="xl" sx={{ py: { xs: 2, md: 4 } }}>
+        <Grid container spacing={{ xs: 2, md: 3 }}>
           <Grid item xs={12} md={3}>
-            <Card sx={{ position: 'sticky', top: 20 }}>
+            <Card sx={{ position: { xs: 'static', md: 'sticky' }, top: 20 }}>
               <CardContent>
                 <Stack spacing={2}>
                   <Stack direction="row" spacing={2} alignItems="center">
@@ -1262,7 +1268,7 @@ const AdminDashboard = () => {
                   label="Copyright Metni"
                   value={siteSettings.copyright_text}
                   onChange={(e) => setSiteSettings({ ...siteSettings, copyright_text: e.target.value })}
-                  placeholder="© 2026 EroxAI Document Studio. Tüm hakları saklıdır."
+                  placeholder="© 2026 EroxAI Studio. Tüm hakları saklıdır."
                   helperText="Footer'da gösterilecek copyright metni"
                 />
                 <Divider sx={{ my: 2 }} />
@@ -1367,6 +1373,69 @@ const AdminDashboard = () => {
                   <option value="openai">OpenAI</option>
                   <option value="deepseek">DeepSeek</option>
                   <option value="blackbox">Blackbox</option>
+                </TextField>
+                <Divider sx={{ my: 2 }} />
+                <Typography variant="h6" sx={{ mb: 2 }}>
+                  Tema Ayarları
+                </Typography>
+                <TextField
+                  label="Primary Color (Hex)"
+                  value={siteSettings.theme_primary_color}
+                  onChange={(e) => setSiteSettings({ ...siteSettings, theme_primary_color: e.target.value })}
+                  placeholder="#667eea"
+                  fullWidth
+                  sx={{ mb: 2 }}
+                  InputProps={{
+                    startAdornment: (
+                      <Box
+                        sx={{
+                          width: 40,
+                          height: 40,
+                          borderRadius: 1,
+                          background: siteSettings.theme_primary_color || '#667eea',
+                          mr: 1,
+                          border: '1px solid rgba(255,255,255,0.2)',
+                        }}
+                      />
+                    ),
+                  }}
+                />
+                <TextField
+                  label="Secondary Color (Hex)"
+                  value={siteSettings.theme_secondary_color}
+                  onChange={(e) => setSiteSettings({ ...siteSettings, theme_secondary_color: e.target.value })}
+                  placeholder="#764ba2"
+                  fullWidth
+                  sx={{ mb: 2 }}
+                  InputProps={{
+                    startAdornment: (
+                      <Box
+                        sx={{
+                          width: 40,
+                          height: 40,
+                          borderRadius: 1,
+                          background: siteSettings.theme_secondary_color || '#764ba2',
+                          mr: 1,
+                          border: '1px solid rgba(255,255,255,0.2)',
+                        }}
+                      />
+                    ),
+                  }}
+                />
+                <TextField
+                  select
+                  label="Theme Preset"
+                  value={siteSettings.theme_preset}
+                  onChange={(e) => setSiteSettings({ ...siteSettings, theme_preset: e.target.value })}
+                  fullWidth
+                  SelectProps={{
+                    native: true,
+                  }}
+                >
+                  <option value="ocean">Ocean</option>
+                  <option value="sunset">Sunset</option>
+                  <option value="violet">Violet</option>
+                  <option value="emerald">Emerald</option>
                 </TextField>
                 <Divider sx={{ my: 2 }} />
                 <Box>
