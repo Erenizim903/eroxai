@@ -1032,6 +1032,7 @@ const AdminDashboard = () => {
                   </Stack>
                 </CardContent>
               </Card>
+              </motion.div>
             </Grid>
             <Grid item xs={12} md={7}>
               <Card>
