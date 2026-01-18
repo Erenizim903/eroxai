@@ -11,6 +11,7 @@ import {
   Typography,
   alpha,
   useTheme,
+  useMediaQuery,
 } from '@mui/material'
 import { motion, useScroll, useTransform } from 'framer-motion'
 import { useRef } from 'react'
