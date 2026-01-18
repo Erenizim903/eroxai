@@ -1,7 +1,9 @@
 {
   "nav": {
     "home": "Home",
-    "workspace": "Workspace"
+    "workspace": "Workspace",
+    "dashboard": "Dashboard",
+    "admin": "Admin"
   },
   "home": {
     "hero": {
@@ -49,6 +51,11 @@
         "title": "Download Output",
         "desc": "Download text or save to history."
       }
+    },
+    "contact": {
+      "kicker": "Contact",
+      "title": "Get in touch",
+      "subtitle": "Support and partnership contact details"
     }
   },
   "workspace": {

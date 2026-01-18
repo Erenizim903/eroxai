@@ -19,3 +19,14 @@ def extract_text_from_pdf(file_path):
 def is_image_file(filename):
     suffix = Path(filename).suffix.lower()
     return suffix in [".png", ".jpg", ".jpeg", ".webp"]
+
+
+def get_file_type(filename):
+    suffix = Path(filename).suffix.lower()
+    if suffix in [".pdf"]:
+        return "pdf"
+    if suffix in [".xlsx", ".xls"]:
+        return "xlsx"
+    if suffix in [".png", ".jpg", ".jpeg", ".webp"]:
+        return "image"
+    return "unknown"

@@ -1,7 +1,9 @@
 {
   "nav": {
     "home": "ホーム",
-    "workspace": "ワークスペース"
+    "workspace": "ワークスペース",
+    "dashboard": "ダッシュボード",
+    "admin": "管理"
   },
   "home": {
     "hero": {
@@ -49,6 +51,11 @@
         "title": "出力をダウンロード",
         "desc": "結果を保存し、履歴で確認。"
       }
+    },
+    "contact": {
+      "kicker": "連絡先",
+      "title": "お問い合わせ",
+      "subtitle": "サポートと提携のご連絡先"
     }
   },
   "workspace": {

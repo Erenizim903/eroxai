@@ -70,6 +70,10 @@ server {
         root /var/www/document-translation-system/frontend/dist;
         try_files $uri /index.html;
     }
+
+    location /media/ {
+        alias /var/www/document-translation-system/backend/media/;
+    }
 }
 ```
 

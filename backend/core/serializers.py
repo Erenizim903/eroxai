@@ -1,6 +1,6 @@
 from django.contrib.auth.models import User
 from rest_framework import serializers
-from .models import UserProfile, PremiumKey, DocumentTemplate, Document, TemplateFill
+from .models import UserProfile, PremiumKey, DocumentTemplate, Document, TemplateFill, TemplateField, SiteSettings, UsageLog
 
 
 class UserProfileSerializer(serializers.ModelSerializer):
@@ -14,7 +14,7 @@ class UserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ("id", "username", "email", "profile")
+        fields = ("id", "username", "email", "is_staff", "profile")
 
 
 class RegisterSerializer(serializers.ModelSerializer):
@@ -38,9 +38,24 @@ class PremiumKeyRedeemSerializer(serializers.Serializer):
 
 
 class DocumentTemplateSerializer(serializers.ModelSerializer):
+    fields = serializers.SerializerMethodField()
+
     class Meta:
         model = DocumentTemplate
-        fields = ("id", "name", "description", "file", "fields_schema", "created_at")
+        fields = (
+            "id",
+            "name",
+            "description",
+            "template_type",
+            "file",
+            "output_language",
+            "fields_schema",
+            "fields",
+            "created_at",
+        )
+
+    def get_fields(self, obj):
+        return TemplateFieldSerializer(obj.fields.all(), many=True).data
 
 
 class DocumentSerializer(serializers.ModelSerializer):
@@ -49,6 +64,7 @@ class DocumentSerializer(serializers.ModelSerializer):
         fields = (
             "id",
             "file",
+            "file_type",
             "source_language",
             "target_language",
             "extracted_text",
@@ -61,4 +77,33 @@ class DocumentSerializer(serializers.ModelSerializer):
 class TemplateFillSerializer(serializers.ModelSerializer):
     class Meta:
         model = TemplateFill
-        fields = ("id", "template", "input_data", "output_data", "created_at")
+        fields = ("id", "template", "input_data", "output_data", "output_file", "created_at")
+
+
+class TemplateFieldSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = TemplateField
+        fields = ("id", "key", "label", "field_type", "required", "mapping")
+
+
+class SiteSettingsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = SiteSettings
+        fields = (
+            "site_name",
+            "logo",
+            "contact_email",
+            "contact_phone",
+            "contact_whatsapp",
+            "address",
+            "hero_title",
+            "hero_subtitle",
+        )
+
+
+class UsageLogSerializer(serializers.ModelSerializer):
+    user = serializers.CharField(source="user.username", read_only=True)
+
+    class Meta:
+        model = UsageLog
+        fields = ("id", "user", "action", "created_at", "metadata")

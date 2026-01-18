@@ -9,6 +9,7 @@ import Navbar from '../components/common/Navbar'
 import Footer from '../components/common/Footer'
 import AnimatedBackground from '../components/common/AnimatedBackground'
 import SectionTitle from '../components/common/SectionTitle'
+import { useSiteStore } from '../store/useSiteStore'
 
 const featureCards = [
   {
@@ -30,6 +31,7 @@ const featureCards = [
 
 const Home = () => {
   const { t } = useTranslation()
+  const siteSettings = useSiteStore((state) => state.settings)
 
   return (
     <Box sx={{ position: 'relative', overflow: 'hidden' }}>
@@ -40,9 +42,11 @@ const Home = () => {
           <Grid container spacing={6} alignItems="center">
             <Grid item xs={12} md={6}>
               <Stack spacing={3}>
-                <Typography variant="h2">{t('home.hero.title')}</Typography>
+                <Typography variant="h2">
+                  {siteSettings?.hero_title || t('home.hero.title')}
+                </Typography>
                 <Typography variant="h5" color="text.secondary">
-                  {t('home.hero.subtitle')}
+                  {siteSettings?.hero_subtitle || t('home.hero.subtitle')}
                 </Typography>
                 <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
                   <Button
@@ -133,6 +137,48 @@ const Home = () => {
               ))}
             </Grid>
           </Box>
+
+          {siteSettings?.contact_email || siteSettings?.contact_phone || siteSettings?.contact_whatsapp ? (
+            <Box sx={{ mt: 10 }}>
+              <SectionTitle
+                kicker={t('home.contact.kicker')}
+                title={t('home.contact.title')}
+                subtitle={t('home.contact.subtitle')}
+              />
+              <Grid container spacing={3}>
+                {siteSettings?.contact_email && (
+                  <Grid item xs={12} md={4}>
+                    <Card>
+                      <CardContent>
+                        <Typography variant="subtitle2">Email</Typography>
+                        <Typography variant="body1">{siteSettings.contact_email}</Typography>
+                      </CardContent>
+                    </Card>
+                  </Grid>
+                )}
+                {siteSettings?.contact_phone && (
+                  <Grid item xs={12} md={4}>
+                    <Card>
+                      <CardContent>
+                        <Typography variant="subtitle2">Telefon</Typography>
+                        <Typography variant="body1">{siteSettings.contact_phone}</Typography>
+                      </CardContent>
+                    </Card>
+                  </Grid>
+                )}
+                {siteSettings?.contact_whatsapp && (
+                  <Grid item xs={12} md={4}>
+                    <Card>
+                      <CardContent>
+                        <Typography variant="subtitle2">WhatsApp</Typography>
+                        <Typography variant="body1">{siteSettings.contact_whatsapp}</Typography>
+                      </CardContent>
+                    </Card>
+                  </Grid>
+                )}
+              </Grid>
+            </Box>
+          ) : null}
         </Container>
         <Footer />
       </Box>

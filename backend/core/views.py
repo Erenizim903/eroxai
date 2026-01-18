@@ -1,9 +1,9 @@
-import uuid
 from django.conf import settings
 from django.contrib.auth import authenticate
 from django.contrib.auth.models import User
 from django.core.mail import send_mail
 from django.core.signing import Signer, BadSignature
+from django.core.files import File
 from django.shortcuts import get_object_or_404
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
@@ -11,8 +11,8 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
 
-from .models import Document, DocumentTemplate, PremiumKey, TemplateFill, UsageLog
-from .permissions import IsVerifiedEmail
+from .models import Document, DocumentTemplate, PremiumKey, TemplateFill, UsageLog, SiteSettings, TemplateField
+from .permissions import IsVerifiedEmail, IsAdminUser
 from .serializers import (
     RegisterSerializer,
     UserSerializer,
@@ -20,10 +20,17 @@ from .serializers import (
     DocumentTemplateSerializer,
     PremiumKeyRedeemSerializer,
     TemplateFillSerializer,
+    SiteSettingsSerializer,
+    UsageLogSerializer,
+    TemplateFieldSerializer,
 )
-from .services.file_processing import file_to_base64, extract_text_from_pdf, is_image_file
+from .services.file_processing import get_file_type
+from .services.ocr_service import run_google_vision_ocr
 from .services.openai_service import translate_text
-from .services.utils import validate_email_domain, request_google_vision_text
+from .services.template_render import render_pdf, render_xlsx, render_blank, render_free_text
+from .services.utils import validate_email_domain
+from openpyxl import load_workbook
+import xlrd
 
 signer = Signer()
 
@@ -127,9 +134,13 @@ def upload_document(request):
     file_obj = request.FILES.get("file")
     if not file_obj:
         return Response({"error": "File required."}, status=status.HTTP_400_BAD_REQUEST)
+    file_type = get_file_type(file_obj.name)
+    if file_type == "unknown":
+        return Response({"error": "Unsupported file type."}, status=status.HTTP_400_BAD_REQUEST)
     doc = Document.objects.create(
         uploaded_by=request.user,
         file=file_obj,
+        file_type=file_type,
         source_language=request.data.get("source_language", "auto"),
         target_language="ja",
     )
@@ -144,14 +155,26 @@ def run_ocr(request, doc_id):
         return Response({"error": "Free usage limit reached."}, status=status.HTTP_403_FORBIDDEN)
     file_path = doc.file.path
     text = ""
-    if is_image_file(doc.file.name):
-        with open(file_path, "rb") as file_obj:
-            base64_img = file_to_base64(file_obj)
-        text = request_google_vision_text(base64_img, request.data.get("language_hint"))
-    elif doc.file.name.lower().endswith(".pdf"):
-        text = extract_text_from_pdf(file_path)
-        if not text:
-            return Response({"error": "PDF OCR requires Vision async setup."}, status=status.HTTP_400_BAD_REQUEST)
+    if doc.file_type in ["pdf", "image"]:
+        text = run_google_vision_ocr(file_path, doc.file_type, request.data.get("language_hint"))
+    elif doc.file_type == "xlsx":
+        chunks = []
+        try:
+            workbook = load_workbook(file_path, data_only=True)
+            for sheet in workbook.worksheets:
+                for row in sheet.iter_rows(values_only=True):
+                    row_text = " ".join([str(cell) for cell in row if cell is not None])
+                    if row_text.strip():
+                        chunks.append(row_text)
+        except Exception:
+            legacy = xlrd.open_workbook(file_path)
+            for sheet in legacy.sheets():
+                for row_idx in range(sheet.nrows):
+                    row_values = sheet.row_values(row_idx)
+                    row_text = " ".join([str(cell) for cell in row_values if cell not in ["", None]])
+                    if row_text.strip():
+                        chunks.append(row_text)
+        text = "\n".join(chunks)
     else:
         return Response({"error": "Unsupported file type."}, status=status.HTTP_400_BAD_REQUEST)
     doc.extracted_text = text
@@ -168,7 +191,7 @@ def translate_document(request, doc_id):
     if not check_usage_limit(request.user):
         return Response({"error": "Free usage limit reached."}, status=status.HTTP_403_FORBIDDEN)
     text = doc.extracted_text or request.data.get("text", "")
-    translated = translate_text(text, doc.source_language, "ja")
+    translated = translate_text(text, doc.source_language, doc.target_language or "ja")
     doc.translated_text = translated
     doc.status = "translated"
     doc.save(update_fields=["translated_text", "status"])
@@ -184,7 +207,7 @@ def list_templates(request):
 
 
 @api_view(["POST"])
-@permission_classes([IsAuthenticated, IsVerifiedEmail])
+@permission_classes([IsAuthenticated, IsVerifiedEmail, IsAdminUser])
 def create_template(request):
     serializer = DocumentTemplateSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
@@ -201,13 +224,24 @@ def fill_template(request, template_id):
     input_data = request.data.get("input_data", {})
     output_data = {}
     for key, value in input_data.items():
-        output_data[key] = translate_text(str(value), "auto", "ja")
+        output_data[key] = translate_text(str(value), "auto", template.output_language or "ja")
+
+    fields = list(template.fields.all())
+    if template.template_type == "pdf" and template.file:
+        output_path = render_pdf(template.file.path, fields, output_data)
+    elif template.template_type == "xlsx":
+        output_path = render_xlsx(template.file.path if template.file else None, fields, output_data)
+    else:
+        output_path = render_blank(output_data, fields)
+
     fill = TemplateFill.objects.create(
         template=template,
         user=request.user,
         input_data=input_data,
         output_data=output_data,
     )
+    with open(output_path, "rb") as handle:
+        fill.output_file.save(output_path.name, File(handle), save=True)
     increment_usage(request.user, "fill_template", {"template": template.id})
     return Response(TemplateFillSerializer(fill).data, status=status.HTTP_201_CREATED)
 
@@ -222,3 +256,113 @@ def full_translate(request):
     translated = translate_text(text, source, "ja")
     increment_usage(request.user, "full_translate")
     return Response({"translated_text": translated})
+
+
+@api_view(["POST"])
+@permission_classes([IsAuthenticated, IsVerifiedEmail])
+def blank_document(request):
+    if not check_usage_limit(request.user):
+        return Response({"error": "Free usage limit reached."}, status=status.HTTP_403_FORBIDDEN)
+    text = request.data.get("text", "")
+    source = request.data.get("source_language", "auto")
+    title = request.data.get("title", "Translated Document")
+    translated = translate_text(text, source, "ja")
+    output_path = render_free_text(translated, title=title)
+    increment_usage(request.user, "blank_document")
+    return Response({"output_file": f"{settings.MEDIA_URL}outputs/{output_path.name}"})
+
+
+@api_view(["GET"])
+@permission_classes([AllowAny])
+def site_settings(request):
+    settings_obj, _ = SiteSettings.objects.get_or_create(id=1)
+    return Response(SiteSettingsSerializer(settings_obj).data)
+
+
+@api_view(["PUT"])
+@permission_classes([IsAuthenticated, IsAdminUser])
+def update_site_settings(request):
+    settings_obj, _ = SiteSettings.objects.get_or_create(id=1)
+    serializer = SiteSettingsSerializer(settings_obj, data=request.data, partial=True)
+    serializer.is_valid(raise_exception=True)
+    serializer.save()
+    return Response(serializer.data)
+
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated, IsAdminUser])
+def admin_users(request):
+    users = User.objects.all().order_by("-date_joined")
+    return Response(UserSerializer(users, many=True).data)
+
+
+@api_view(["POST"])
+@permission_classes([IsAuthenticated, IsAdminUser])
+def admin_create_user(request):
+    serializer = RegisterSerializer(data=request.data)
+    serializer.is_valid(raise_exception=True)
+    user = serializer.save()
+    if request.data.get("is_staff"):
+        user.is_staff = True
+    if request.data.get("is_superuser"):
+        user.is_superuser = True
+    user.is_active = request.data.get("is_active", True)
+    user.save()
+    return Response(UserSerializer(user).data, status=status.HTTP_201_CREATED)
+
+
+@api_view(["DELETE"])
+@permission_classes([IsAuthenticated, IsAdminUser])
+def admin_delete_user(request, user_id):
+    user = get_object_or_404(User, id=user_id)
+    user.delete()
+    return Response({"message": "User deleted."})
+
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated, IsAdminUser])
+def admin_logs(request):
+    logs = UsageLog.objects.all().order_by("-created_at")[:500]
+    return Response(UsageLogSerializer(logs, many=True).data)
+
+
+@api_view(["GET", "POST"])
+@permission_classes([IsAuthenticated, IsAdminUser])
+def admin_premium_keys(request):
+    if request.method == "GET":
+        keys = PremiumKey.objects.all().order_by("-id")
+        return Response(
+            [{"id": k.id, "code": k.code, "is_active": k.is_active, "used_count": k.used_count, "max_uses": k.max_uses} for k in keys]
+        )
+    code = request.data.get("code")
+    max_uses = int(request.data.get("max_uses", 1))
+    key = PremiumKey.objects.create(code=code or uuid.uuid4().hex, max_uses=max_uses)
+    return Response({"id": key.id, "code": key.code})
+
+
+@api_view(["POST"])
+@permission_classes([IsAuthenticated, IsAdminUser])
+def admin_add_template_field(request, template_id):
+    template = get_object_or_404(DocumentTemplate, id=template_id)
+    serializer = TemplateFieldSerializer(data=request.data)
+    serializer.is_valid(raise_exception=True)
+    field = serializer.save(template=template)
+    return Response(TemplateFieldSerializer(field).data, status=status.HTTP_201_CREATED)
+
+
+@api_view(["DELETE"])
+@permission_classes([IsAuthenticated, IsAdminUser])
+def admin_delete_template_field(request, template_id, field_id):
+    field = get_object_or_404(TemplateField, id=field_id, template_id=template_id)
+    field.delete()
+    return Response({"message": "Field deleted."})
+
+
+@api_view(["PUT"])
+@permission_classes([IsAuthenticated, IsAdminUser])
+def admin_update_template_field(request, template_id, field_id):
+    field = get_object_or_404(TemplateField, id=field_id, template_id=template_id)
+    serializer = TemplateFieldSerializer(field, data=request.data, partial=True)
+    serializer.is_valid(raise_exception=True)
+    serializer.save()
+    return Response(serializer.data)

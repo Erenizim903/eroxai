@@ -1,7 +1,9 @@
 {
   "nav": {
     "home": "Ana Sayfa",
-    "workspace": "Çalışma Alanı"
+    "workspace": "Çalışma Alanı",
+    "dashboard": "Panel",
+    "admin": "Admin"
   },
   "home": {
     "hero": {
@@ -49,6 +51,11 @@
         "title": "Çıktıyı İndir",
         "desc": "Metni indir ya da geçmişe kaydet."
       }
+    },
+    "contact": {
+      "kicker": "İletişim",
+      "title": "Bize Ulaşın",
+      "subtitle": "Destek ve iş ortaklığı için iletişim bilgileri"
     }
   },
   "workspace": {
