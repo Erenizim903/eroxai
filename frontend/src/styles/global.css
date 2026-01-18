@@ -1,0 +1,50 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  min-height: 100%;
+}
+
+body {
+  font-family: 'Roboto', 'Noto Sans JP', system-ui, sans-serif;
+  background: radial-gradient(circle at top, rgba(91, 140, 255, 0.15), transparent 45%),
+    radial-gradient(circle at 20% 20%, rgba(255, 143, 91, 0.1), transparent 40%),
+    #0b1120;
+  color: #f9fafb;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body[data-theme='light'] {
+  background: radial-gradient(circle at top, rgba(91, 140, 255, 0.12), transparent 45%),
+    radial-gradient(circle at 20% 20%, rgba(255, 143, 91, 0.08), transparent 40%),
+    #f7f8fc;
+  color: #111827;
+}
+
+img {
+  max-width: 100%;
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.5);
+  border-radius: 999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(148, 163, 184, 0.7);
+}

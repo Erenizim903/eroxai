@@ -1,0 +1,68 @@
+{
+  "nav": {
+    "home": "Home",
+    "workspace": "Workspace"
+  },
+  "home": {
+    "hero": {
+      "title": "Document Translation Studio",
+      "subtitle": "Manage OCR and translation in one workspace and export results instantly.",
+      "ctaPrimary": "Get Started",
+      "ctaSecondary": "Learn More",
+      "demo": "Demo Flow",
+      "demoTitle": "PDF to OCR + Translation",
+      "demoDesc": "Upload your file, extract text, translate, and download the output."
+    },
+    "features": {
+      "kicker": "Features",
+      "title": "Everything in One Panel",
+      "subtitle": "All processing happens in the browser. No backend required.",
+      "ocr": {
+        "title": "Advanced OCR",
+        "desc": "Extract text from PDF or images with page progress tracking."
+      },
+      "translate": {
+        "title": "Multi-language Translation",
+        "desc": "LibreTranslate integration with 8+ languages."
+      },
+      "fast": {
+        "title": "Fast and Private",
+        "desc": "Your data stays in the browser with full control."
+      }
+    },
+    "steps": {
+      "kicker": "How It Works",
+      "title": "Ready in 3 Steps",
+      "subtitle": "Upload and deploy without a backend.",
+      "step1": {
+        "label": "Step 1",
+        "title": "Upload File",
+        "desc": "Drag & drop a PDF or image."
+      },
+      "step2": {
+        "label": "Step 2",
+        "title": "OCR + Translate",
+        "desc": "Extract text, choose a target language, translate."
+      },
+      "step3": {
+        "label": "Step 3",
+        "title": "Download Output",
+        "desc": "Download text or save to history."
+      }
+    }
+  },
+  "workspace": {
+    "title": "Workspace",
+    "subtitle": "OCR, translation, and history in one place.",
+    "tabs": {
+      "ocr": "OCR",
+      "translate": "Translate",
+      "history": "History",
+      "settings": "Settings"
+    }
+  },
+  "footer": {
+    "tagline": "Browser-based OCR + Translation platform.",
+    "powered": "Powered by EroxAI."
+  }
+}

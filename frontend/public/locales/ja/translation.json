@@ -1,0 +1,68 @@
+{
+  "nav": {
+    "home": "ホーム",
+    "workspace": "ワークスペース"
+  },
+  "home": {
+    "hero": {
+      "title": "ドキュメント翻訳スタジオ",
+      "subtitle": "OCRと翻訳を一つの画面で管理し、結果をすぐに出力。",
+      "ctaPrimary": "今すぐ始める",
+      "ctaSecondary": "詳しく見る",
+      "demo": "デモフロー",
+      "demoTitle": "PDFからOCR + 翻訳",
+      "demoDesc": "ファイルをアップロードし、文字を抽出、翻訳してダウンロード。"
+    },
+    "features": {
+      "kicker": "特徴",
+      "title": "ワンパネルで完結",
+      "subtitle": "すべてブラウザ内で処理。バックエンド不要。",
+      "ocr": {
+        "title": "高度なOCR",
+        "desc": "PDFや画像からテキスト抽出、ページ進捗も表示。"
+      },
+      "translate": {
+        "title": "多言語翻訳",
+        "desc": "LibreTranslateで8言語以上をサポート。"
+      },
+      "fast": {
+        "title": "高速＆プライバシー",
+        "desc": "データはブラウザ内に留まり、管理は自分で。"
+      }
+    },
+    "steps": {
+      "kicker": "使い方",
+      "title": "3ステップで完了",
+      "subtitle": "バックエンド不要でそのまま公開。",
+      "step1": {
+        "label": "ステップ1",
+        "title": "ファイルをアップロード",
+        "desc": "PDFや画像をドラッグ＆ドロップ。"
+      },
+      "step2": {
+        "label": "ステップ2",
+        "title": "OCR + 翻訳",
+        "desc": "文字抽出後に翻訳言語を選択。"
+      },
+      "step3": {
+        "label": "ステップ3",
+        "title": "出力をダウンロード",
+        "desc": "結果を保存し、履歴で確認。"
+      }
+    }
+  },
+  "workspace": {
+    "title": "ワークスペース",
+    "subtitle": "OCR・翻訳・履歴をまとめて管理。",
+    "tabs": {
+      "ocr": "OCR",
+      "translate": "翻訳",
+      "history": "履歴",
+      "settings": "設定"
+    }
+  },
+  "footer": {
+    "tagline": "ブラウザ完結のOCR + 翻訳プラットフォーム。",
+    "powered": "EroxAI 提供"
+  }
+}

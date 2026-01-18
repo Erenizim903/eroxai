@@ -1,0 +1,68 @@
+{
+  "nav": {
+    "home": "Ana Sayfa",
+    "workspace": "Çalışma Alanı"
+  },
+  "home": {
+    "hero": {
+      "title": "Belge Çeviri Stüdyosu",
+      "subtitle": "OCR ve çeviri süreçlerini tek panelde yönet, sonuçları anında indir.",
+      "ctaPrimary": "Hemen Başla",
+      "ctaSecondary": "Daha Fazlası",
+      "demo": "Örnek Akış",
+      "demoTitle": "PDF'den OCR + Çeviri",
+      "demoDesc": "Belgeni yükle, OCR metnini çıkar, hedef dile dönüştür ve çıktıyı indir."
+    },
+    "features": {
+      "kicker": "Özellikler",
+      "title": "Tek Panelde Tüm İş Akışı",
+      "subtitle": "Tüm süreçler tarayıcıda, harici sunucu gerekmeden.",
+      "ocr": {
+        "title": "Gelişmiş OCR",
+        "desc": "PDF ve görsellerden metin çıkar; sayfa bazlı ilerlemeyi izle."
+      },
+      "translate": {
+        "title": "Çok Dilli Çeviri",
+        "desc": "LibreTranslate ile 8+ dilde çeviri ve hızlı çıktı."
+      },
+      "fast": {
+        "title": "Hızlı ve Güvenli",
+        "desc": "Veriler tarayıcıda işlenir, gizlilik kontrolü sende."
+      }
+    },
+    "steps": {
+      "kicker": "Nasıl Çalışır?",
+      "title": "3 Adımda Hazır",
+      "subtitle": "Hiç backend kurmadan, doğrudan web'e yükle.",
+      "step1": {
+        "label": "Adım 1",
+        "title": "Dosya Yükle",
+        "desc": "PDF veya görseli sürükleyip bırak."
+      },
+      "step2": {
+        "label": "Adım 2",
+        "title": "OCR + Çeviri",
+        "desc": "OCR çıktısını al, hedef dili seç ve çevir."
+      },
+      "step3": {
+        "label": "Adım 3",
+        "title": "Çıktıyı İndir",
+        "desc": "Metni indir ya da geçmişe kaydet."
+      }
+    }
+  },
+  "workspace": {
+    "title": "Çalışma Alanı",
+    "subtitle": "OCR, çeviri ve geçmiş işlemlerin tek yerde.",
+    "tabs": {
+      "ocr": "OCR",
+      "translate": "Çeviri",
+      "history": "Geçmiş",
+      "settings": "Ayarlar"
+    }
+  },
+  "footer": {
+    "tagline": "Tarayıcı tabanlı OCR + Çeviri platformu.",
+    "powered": "EroxAI tarafından desteklenir."
+  }
+}
