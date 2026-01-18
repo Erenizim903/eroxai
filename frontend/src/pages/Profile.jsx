@@ -180,7 +180,15 @@ const Profile = () => {
                       transition={{ duration: 2, repeat: Infinity }}
                     >
                       <Avatar
-                        src={user?.profile?.avatar ? `/media/${user.profile.avatar}` : undefined}
+                        src={
+                          user?.profile?.avatar
+                            ? user.profile.avatar.startsWith('/media/')
+                              ? user.profile.avatar
+                              : user.profile.avatar.startsWith('http')
+                              ? user.profile.avatar
+                              : `/media/${user.profile.avatar}`
+                            : undefined
+                        }
                         sx={{
                           width: 120,
                           height: 120,
