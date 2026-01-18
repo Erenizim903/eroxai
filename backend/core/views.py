@@ -1,3 +1,4 @@
+import uuid
 from django.conf import settings
 from django.contrib.auth import authenticate
 from django.contrib.auth.models import User
@@ -5,13 +6,16 @@ from django.core.mail import send_mail
 from django.core.signing import Signer, BadSignature
 from django.core.files import File
 from django.shortcuts import get_object_or_404
+from django.utils import timezone
+from django.db.models import Count, Q, Sum
+from datetime import timedelta
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
 
-from .models import Document, DocumentTemplate, PremiumKey, TemplateFill, UsageLog, SiteSettings, TemplateField
+from .models import Document, DocumentTemplate, PremiumKey, PremiumKeyRequest, TemplateFill, UsageLog, UserActivityLog, AIChatLog, SiteSettings, TemplateField, UserProfile
 from .permissions import IsVerifiedEmail, IsAdminUser
 from .serializers import (
     RegisterSerializer,
@@ -19,20 +23,35 @@ from .serializers import (
     DocumentSerializer,
     DocumentTemplateSerializer,
     PremiumKeyRedeemSerializer,
+    PremiumKeyRequestSerializer,
     TemplateFillSerializer,
     SiteSettingsSerializer,
     UsageLogSerializer,
+    UserActivityLogSerializer,
+    AIChatLogSerializer,
     TemplateFieldSerializer,
+    ProfileUpdateSerializer,
 )
 from .services.file_processing import get_file_type
 from .services.ocr_service import run_google_vision_ocr
 from .services.openai_service import translate_text
+from .services.chat_service import chat_with_ai, get_chat_provider_settings
 from .services.template_render import render_pdf, render_xlsx, render_blank, render_free_text
 from .services.utils import validate_email_domain
 from openpyxl import load_workbook
 import xlrd
 
 signer = Signer()
+
+
+def get_client_ip(request):
+    """Get client IP address from request"""
+    x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+    if x_forwarded_for:
+        ip = x_forwarded_for.split(',')[0]
+    else:
+        ip = request.META.get('REMOTE_ADDR')
+    return ip
 
 
 def issue_tokens(user):
@@ -63,17 +82,38 @@ def register(request):
     if not validate_email_domain(email):
         return Response({"error": "Email domain is invalid."}, status=status.HTTP_400_BAD_REQUEST)
     user = serializer.save()
+    
+    # Log registration activity
+    ip_address = get_client_ip(request)
+    user_agent = request.META.get('HTTP_USER_AGENT', '')
+    UserActivityLog.objects.create(
+        user=user,
+        action='register',
+        ip_address=ip_address,
+        user_agent=user_agent,
+        metadata={'email': email}
+    )
+    
+    # Yeni kullanıcıya otomatik kısıtlı key ver (1 kullanım hakkı)
+    key_code = f"TRIAL-{uuid.uuid4().hex[:12].upper()}"
+    trial_key = PremiumKey.objects.create(code=key_code, max_uses=1, is_active=True)
+    
     token = signer.sign(str(user.id))
     verify_url = f"{request.data.get('verifyBaseUrl','')}/verify-email?token={token}"
     if settings.EMAIL_HOST:
         send_mail(
             "Verify your account",
-            f"Click to verify: {verify_url}",
+            f"Click to verify: {verify_url}\n\nYour trial premium key: {key_code}\nPlease save this key and enter it in the dashboard after login.",
             settings.DEFAULT_FROM_EMAIL,
             [email],
             fail_silently=True,
         )
-    return Response({"message": "Registered. Verify your email.", "token": token})
+    return Response({
+        "message": "Registered. Verify your email.",
+        "token": token,
+        "trial_key": key_code,
+        "note": "Please save your trial premium key and enter it in the dashboard after login."
+    })
 
 
 @api_view(["POST"])
@@ -100,6 +140,18 @@ def login(request):
     user = authenticate(username=username, password=password)
     if not user:
         return Response({"error": "Invalid credentials."}, status=status.HTTP_401_UNAUTHORIZED)
+    
+    # Log login activity
+    ip_address = get_client_ip(request)
+    user_agent = request.META.get('HTTP_USER_AGENT', '')
+    UserActivityLog.objects.create(
+        user=user,
+        action='login',
+        ip_address=ip_address,
+        user_agent=user_agent,
+        metadata={'username': username}
+    )
+    
     return Response({"user": UserSerializer(user).data, "tokens": issue_tokens(user)})
 
 
@@ -107,6 +159,45 @@ def login(request):
 @permission_classes([IsAuthenticated])
 def me(request):
     return Response(UserSerializer(request.user).data)
+
+
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def logout(request):
+    """Logout endpoint - logs user logout activity"""
+    ip_address = get_client_ip(request)
+    user_agent = request.META.get('HTTP_USER_AGENT', '')
+    UserActivityLog.objects.create(
+        user=request.user,
+        action='logout',
+        ip_address=ip_address,
+        user_agent=user_agent,
+    )
+    return Response({"message": "Logged out successfully."})
+
+
+@api_view(["PUT"])
+@permission_classes([IsAuthenticated])
+def update_profile(request):
+    serializer = ProfileUpdateSerializer(data=request.data)
+    serializer.is_valid(raise_exception=True)
+    user = request.user
+    profile = user.profile
+
+    for field in ["first_name", "last_name", "email"]:
+        if field in serializer.validated_data:
+            setattr(user, field, serializer.validated_data[field])
+    user.save()
+
+    for field in ["phone", "company", "title", "address", "locale"]:
+        if field in serializer.validated_data:
+            setattr(profile, field, serializer.validated_data[field])
+
+    if "avatar" in request.FILES:
+        profile.avatar = request.FILES["avatar"]
+
+    profile.save()
+    return Response(UserSerializer(user).data)
 
 
 @api_view(["POST"])
@@ -326,6 +417,39 @@ def admin_logs(request):
     return Response(UsageLogSerializer(logs, many=True).data)
 
 
+@api_view(["GET"])
+@permission_classes([IsAuthenticated, IsAdminUser])
+def admin_activity_logs(request):
+    """Get user activity logs (login, logout, register, etc.)"""
+    user_id = request.query_params.get("user_id")
+    action = request.query_params.get("action")
+    limit = int(request.query_params.get("limit", 500))
+    
+    logs = UserActivityLog.objects.all()
+    if user_id:
+        logs = logs.filter(user_id=user_id)
+    if action:
+        logs = logs.filter(action=action)
+    
+    logs = logs.order_by("-created_at")[:limit]
+    return Response(UserActivityLogSerializer(logs, many=True).data)
+
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated, IsAdminUser])
+def admin_ai_chat_logs(request):
+    """Get AI chat logs - son 3 gün içindekiler (daha eski olanlar otomatik silindi)"""
+    user_id = request.query_params.get("user_id")
+    limit = int(request.query_params.get("limit", 500))
+    
+    logs = AIChatLog.objects.all()
+    if user_id:
+        logs = logs.filter(user_id=user_id)
+    
+    logs = logs.order_by("-created_at")[:limit]
+    return Response(AIChatLogSerializer(logs, many=True).data)
+
+
 @api_view(["GET", "POST"])
 @permission_classes([IsAuthenticated, IsAdminUser])
 def admin_premium_keys(request):
@@ -366,3 +490,184 @@ def admin_update_template_field(request, template_id, field_id):
     serializer.is_valid(raise_exception=True)
     serializer.save()
     return Response(serializer.data)
+
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated, IsAdminUser])
+def admin_analytics(request):
+    now = timezone.now()
+    last_7_days = now - timedelta(days=7)
+    last_30_days = now - timedelta(days=30)
+    
+    total_users = User.objects.count()
+    active_users = User.objects.filter(last_login__gte=last_30_days).count()
+    premium_users = UserProfile.objects.filter(is_premium=True).count()
+    total_documents = Document.objects.count()
+    total_templates = DocumentTemplate.objects.count()
+    total_keys = PremiumKey.objects.count()
+    active_keys = PremiumKey.objects.filter(is_active=True).count()
+    
+    usage_last_7 = UsageLog.objects.filter(created_at__gte=last_7_days).count()
+    usage_last_30 = UsageLog.objects.filter(created_at__gte=last_30_days).count()
+    
+    # Activity logs stats
+    login_count_7 = UserActivityLog.objects.filter(action='login', created_at__gte=last_7_days).count()
+    login_count_30 = UserActivityLog.objects.filter(action='login', created_at__gte=last_30_days).count()
+    logout_count_7 = UserActivityLog.objects.filter(action='logout', created_at__gte=last_7_days).count()
+    logout_count_30 = UserActivityLog.objects.filter(action='logout', created_at__gte=last_30_days).count()
+    register_count_7 = UserActivityLog.objects.filter(action='register', created_at__gte=last_7_days).count()
+    register_count_30 = UserActivityLog.objects.filter(action='register', created_at__gte=last_30_days).count()
+    
+    # Unique IPs
+    unique_ips_7 = UserActivityLog.objects.filter(created_at__gte=last_7_days).values('ip_address').distinct().count()
+    unique_ips_30 = UserActivityLog.objects.filter(created_at__gte=last_30_days).values('ip_address').distinct().count()
+    
+    action_stats = UsageLog.objects.filter(created_at__gte=last_30_days).values('action').annotate(count=Count('id')).order_by('-count')[:10]
+    
+    user_registrations = User.objects.filter(date_joined__gte=last_30_days).extra(
+        select={'day': 'date(date_joined)'}
+    ).values('day').annotate(count=Count('id')).order_by('day')
+    
+    usage_timeline = UsageLog.objects.filter(created_at__gte=last_7_days).extra(
+        select={'day': 'date(created_at)'}
+    ).values('day').annotate(count=Count('id')).order_by('day')
+    
+    return Response({
+        "overview": {
+            "total_users": total_users,
+            "active_users": active_users,
+            "premium_users": premium_users,
+            "total_documents": total_documents,
+            "total_templates": total_templates,
+            "total_keys": total_keys,
+            "active_keys": active_keys,
+            "usage_last_7_days": usage_last_7,
+            "usage_last_30_days": usage_last_30,
+            "login_count_7_days": login_count_7,
+            "login_count_30_days": login_count_30,
+            "logout_count_7_days": logout_count_7,
+            "logout_count_30_days": logout_count_30,
+            "register_count_7_days": register_count_7,
+            "register_count_30_days": register_count_30,
+            "unique_ips_7_days": unique_ips_7,
+            "unique_ips_30_days": unique_ips_30,
+        },
+        "action_stats": list(action_stats),
+        "user_registrations": list(user_registrations),
+        "usage_timeline": list(usage_timeline),
+    })
+
+
+@api_view(["POST"])
+@permission_classes([IsAuthenticated, IsVerifiedEmail])
+def ai_chat(request):
+    if not check_usage_limit(request.user):
+        return Response({"error": "Free usage limit reached."}, status=status.HTTP_403_FORBIDDEN)
+    message = request.data.get("message", "")
+    language = request.data.get("language", "tr")
+    provider = request.data.get("provider", None)
+    if not message:
+        return Response({"error": "Message required."}, status=status.HTTP_400_BAD_REQUEST)
+    
+    response_text = chat_with_ai(message, language, provider)
+    
+    # AI chat mesajını logla
+    ip_address = get_client_ip(request)
+    user_agent = request.META.get('HTTP_USER_AGENT', '')
+    provider_settings = get_chat_provider_settings()
+    active_provider = provider or provider_settings.get('provider', 'openai')
+    
+    AIChatLog.objects.create(
+        user=request.user,
+        message=message,
+        response=response_text,
+        language=language,
+        provider=active_provider,
+        ip_address=ip_address,
+        user_agent=user_agent,
+    )
+    
+    # 3 günden eski AI chat loglarını temizle
+    three_days_ago = timezone.now() - timedelta(days=3)
+    AIChatLog.objects.filter(created_at__lt=three_days_ago).delete()
+    
+    increment_usage(request.user, "ai_chat", {"language": language})
+    return Response({"response": response_text})
+
+
+@api_view(["POST"])
+@permission_classes([IsAuthenticated, IsVerifiedEmail])
+def create_premium_request(request):
+    """Kullanıcı premium key başvurusu yapar"""
+    reason = request.data.get("reason", "")
+    existing_pending = PremiumKeyRequest.objects.filter(user=request.user, status="pending").exists()
+    if existing_pending:
+        return Response({"error": "Zaten bekleyen bir başvurunuz var."}, status=status.HTTP_400_BAD_REQUEST)
+    
+    req = PremiumKeyRequest.objects.create(user=request.user, reason=reason)
+    return Response(PremiumKeyRequestSerializer(req).data, status=status.HTTP_201_CREATED)
+
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated, IsVerifiedEmail])
+def my_premium_requests(request):
+    """Kullanıcı kendi başvurularını görür"""
+    requests = PremiumKeyRequest.objects.filter(user=request.user).order_by("-created_at")
+    return Response(PremiumKeyRequestSerializer(requests, many=True).data)
+
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated, IsAdminUser])
+def admin_premium_requests(request):
+    """Admin tüm başvuruları görür"""
+    status_filter = request.query_params.get("status", None)
+    qs = PremiumKeyRequest.objects.all().order_by("-created_at")
+    if status_filter:
+        qs = qs.filter(status=status_filter)
+    return Response(PremiumKeyRequestSerializer(qs, many=True).data)
+
+
+@api_view(["POST"])
+@permission_classes([IsAuthenticated, IsAdminUser])
+def admin_approve_request(request, request_id):
+    """Admin başvuruyu onaylar ve premium key oluşturur"""
+    req = get_object_or_404(PremiumKeyRequest, id=request_id)
+    if req.status != "pending":
+        return Response({"error": "Bu başvuru zaten işleme alınmış."}, status=status.HTTP_400_BAD_REQUEST)
+    
+    # Premium key oluştur
+    key_code = request.data.get("key_code") or uuid.uuid4().hex[:16]
+    max_uses = int(request.data.get("max_uses", 1))
+    premium_key = PremiumKey.objects.create(code=key_code, max_uses=max_uses)
+    
+    # Başvuruyu onayla
+    req.status = "approved"
+    req.approved_by = request.user
+    req.admin_note = request.data.get("admin_note", "")
+    req.save()
+    
+    # Kullanıcıya premium ver
+    profile = req.user.profile
+    profile.is_premium = True
+    profile.save()
+    
+    return Response({
+        "request": PremiumKeyRequestSerializer(req).data,
+        "key": {"id": premium_key.id, "code": premium_key.code},
+    })
+
+
+@api_view(["POST"])
+@permission_classes([IsAuthenticated, IsAdminUser])
+def admin_reject_request(request, request_id):
+    """Admin başvuruyu reddeder"""
+    req = get_object_or_404(PremiumKeyRequest, id=request_id)
+    if req.status != "pending":
+        return Response({"error": "Bu başvuru zaten işleme alınmış."}, status=status.HTTP_400_BAD_REQUEST)
+    
+    req.status = "rejected"
+    req.approved_by = request.user
+    req.admin_note = request.data.get("admin_note", "")
+    req.save()
+    
+    return Response(PremiumKeyRequestSerializer(req).data)

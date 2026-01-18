@@ -3,10 +3,13 @@ from django.utils.crypto import get_random_string
 from .models import (
     UserProfile,
     PremiumKey,
+    PremiumKeyRequest,
     DocumentTemplate,
     Document,
     TemplateFill,
     UsageLog,
+    UserActivityLog,
+    AIChatLog,
     TemplateField,
     SiteSettings,
 )
@@ -67,3 +70,30 @@ class TemplateFieldAdmin(admin.ModelAdmin):
 @admin.register(SiteSettings)
 class SiteSettingsAdmin(admin.ModelAdmin):
     list_display = ("site_name", "contact_email", "contact_phone", "updated_at")
+
+
+@admin.register(PremiumKeyRequest)
+class PremiumKeyRequestAdmin(admin.ModelAdmin):
+    list_display = ("user", "status", "created_at", "approved_by", "updated_at")
+    list_filter = ("status", "created_at")
+    search_fields = ("user__username", "user__email", "reason")
+    readonly_fields = ("created_at", "updated_at")
+
+
+@admin.register(UserActivityLog)
+class UserActivityLogAdmin(admin.ModelAdmin):
+    list_display = ("user", "action", "ip_address", "created_at")
+    list_filter = ("action", "created_at")
+    search_fields = ("user__username", "ip_address", "user_agent")
+    readonly_fields = ("created_at",)
+    date_hierarchy = "created_at"
+
+
+@admin.register(AIChatLog)
+class AIChatLogAdmin(admin.ModelAdmin):
+    list_display = ("user", "provider", "language", "ip_address", "created_at")
+    list_filter = ("provider", "language", "created_at")
+    search_fields = ("user__username", "message", "response", "ip_address")
+    readonly_fields = ("created_at",)
+    date_hierarchy = "created_at"
+    ordering = ["-created_at"]

@@ -8,6 +8,12 @@ class UserProfile(models.Model):
     usage_count = models.PositiveIntegerField(default=0)
     is_premium = models.BooleanField(default=False)
     premium_until = models.DateTimeField(null=True, blank=True)
+    phone = models.CharField(max_length=40, blank=True)
+    company = models.CharField(max_length=120, blank=True)
+    title = models.CharField(max_length=120, blank=True)
+    address = models.TextField(blank=True)
+    locale = models.CharField(max_length=8, default="tr")
+    avatar = models.ImageField(upload_to="avatars/", null=True, blank=True)
 
     def __str__(self):
         return f"{self.user.username} profile"
@@ -22,6 +28,25 @@ class PremiumKey(models.Model):
 
     def __str__(self):
         return self.code
+
+
+class PremiumKeyRequest(models.Model):
+    STATUS_CHOICES = [
+        ("pending", "Pending"),
+        ("approved", "Approved"),
+        ("rejected", "Rejected"),
+    ]
+
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="premium_requests")
+    reason = models.TextField(blank=True)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="pending")
+    admin_note = models.TextField(blank=True)
+    approved_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name="approved_requests")
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"{self.user.username} - {self.status}"
 
 
 class DocumentTemplate(models.Model):
@@ -81,6 +106,57 @@ class UsageLog(models.Model):
     metadata = models.JSONField(default=dict)
 
 
+class UserActivityLog(models.Model):
+    ACTION_CHOICES = [
+        ("login", "Login"),
+        ("logout", "Logout"),
+        ("register", "Register"),
+        ("password_reset", "Password Reset"),
+        ("profile_update", "Profile Update"),
+    ]
+    
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="activity_logs")
+    action = models.CharField(max_length=32, choices=ACTION_CHOICES)
+    ip_address = models.GenericIPAddressField(null=True, blank=True)
+    user_agent = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    metadata = models.JSONField(default=dict, blank=True)
+    
+    class Meta:
+        ordering = ["-created_at"]
+        indexes = [
+            models.Index(fields=["-created_at"]),
+            models.Index(fields=["user", "-created_at"]),
+            models.Index(fields=["action", "-created_at"]),
+        ]
+    
+    def __str__(self):
+        return f"{self.user.username} - {self.action} - {self.created_at}"
+
+
+class AIChatLog(models.Model):
+    """AI chat mesajlarını loglar - 3 gün sonra otomatik silinir"""
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="ai_chat_logs")
+    message = models.TextField()
+    response = models.TextField()
+    language = models.CharField(max_length=8, default="tr")
+    provider = models.CharField(max_length=20, default="openai")
+    ip_address = models.GenericIPAddressField(null=True, blank=True)
+    user_agent = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        ordering = ["-created_at"]
+        indexes = [
+            models.Index(fields=["-created_at"]),
+            models.Index(fields=["user", "-created_at"]),
+            models.Index(fields=["created_at"]),  # 3 günlük silme için
+        ]
+    
+    def __str__(self):
+        return f"{self.user.username} - {self.created_at}"
+
+
 class TemplateField(models.Model):
     FIELD_TYPES = [
         ("text", "Text"),
@@ -109,4 +185,20 @@ class SiteSettings(models.Model):
     address = models.TextField(blank=True)
     hero_title = models.CharField(max_length=200, blank=True)
     hero_subtitle = models.TextField(blank=True)
+    copyright_text = models.CharField(max_length=200, default="© 2026 EroxAI Document Studio. Tüm hakları saklıdır.")
+    social_facebook = models.CharField(max_length=200, blank=True)
+    social_instagram = models.CharField(max_length=200, blank=True)
+    social_twitter = models.CharField(max_length=200, blank=True)
+    social_linkedin = models.CharField(max_length=200, blank=True)
+    social_youtube = models.CharField(max_length=200, blank=True)
+    social_github = models.CharField(max_length=200, blank=True)
+    social_telegram = models.CharField(max_length=200, blank=True)
+    # AI API Endpoints
+    google_ai_endpoint = models.CharField(max_length=500, default="https://vision.googleapis.com/v1/images:annotate", blank=True)
+    openai_endpoint = models.CharField(max_length=500, default="https://api.openai.com/v1/chat/completions", blank=True)
+    deepseek_endpoint = models.CharField(max_length=500, default="https://api.deepseek.com/v1/chat/completions", blank=True)
+    blackbox_endpoint = models.CharField(max_length=500, default="https://www.blackbox.ai/api/chat", blank=True)
+    # AI Chat Provider (openai, deepseek, blackbox)
+    chat_provider = models.CharField(max_length=20, default="openai", blank=True)
+    site_texts = models.JSONField(default=dict, blank=True)
     updated_at = models.DateTimeField(auto_now=True)

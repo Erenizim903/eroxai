@@ -49,3 +49,13 @@ export const updateSiteSettings = async (payload) => {
   const { data } = await api.put('/site-settings/update/', payload)
   return data
 }
+
+export const fetchAdminAnalytics = async () => {
+  const { data } = await api.get('/admin/analytics/')
+  return data
+}
+
+export const fetchAdminActivityLogs = async (params = {}) => {
+  const { data } = await api.get('/admin/activity-logs/', { params })
+  return data
+}

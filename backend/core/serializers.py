@@ -1,12 +1,23 @@
 from django.contrib.auth.models import User
 from rest_framework import serializers
-from .models import UserProfile, PremiumKey, DocumentTemplate, Document, TemplateFill, TemplateField, SiteSettings, UsageLog
+from .models import UserProfile, PremiumKey, DocumentTemplate, Document, TemplateFill, TemplateField, SiteSettings, UsageLog, PremiumKeyRequest, UserActivityLog, AIChatLog
 
 
 class UserProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserProfile
-        fields = ("is_email_verified", "usage_count", "is_premium", "premium_until")
+        fields = (
+            "is_email_verified",
+            "usage_count",
+            "is_premium",
+            "premium_until",
+            "phone",
+            "company",
+            "title",
+            "address",
+            "locale",
+            "avatar",
+        )
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -14,7 +25,7 @@ class UserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ("id", "username", "email", "is_staff", "profile")
+        fields = ("id", "username", "email", "first_name", "last_name", "is_staff", "profile")
 
 
 class RegisterSerializer(serializers.ModelSerializer):
@@ -22,7 +33,7 @@ class RegisterSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ("username", "email", "password")
+        fields = ("username", "email", "password", "first_name", "last_name")
 
     def create(self, validated_data):
         user = User.objects.create_user(
@@ -35,6 +46,17 @@ class RegisterSerializer(serializers.ModelSerializer):
 
 class PremiumKeyRedeemSerializer(serializers.Serializer):
     code = serializers.CharField()
+
+
+class ProfileUpdateSerializer(serializers.Serializer):
+    first_name = serializers.CharField(required=False, allow_blank=True)
+    last_name = serializers.CharField(required=False, allow_blank=True)
+    email = serializers.EmailField(required=False, allow_blank=True)
+    phone = serializers.CharField(required=False, allow_blank=True)
+    company = serializers.CharField(required=False, allow_blank=True)
+    title = serializers.CharField(required=False, allow_blank=True)
+    address = serializers.CharField(required=False, allow_blank=True)
+    locale = serializers.CharField(required=False, allow_blank=True)
 
 
 class DocumentTemplateSerializer(serializers.ModelSerializer):
@@ -98,6 +120,20 @@ class SiteSettingsSerializer(serializers.ModelSerializer):
             "address",
             "hero_title",
             "hero_subtitle",
+            "copyright_text",
+            "social_facebook",
+            "social_instagram",
+            "social_twitter",
+            "social_linkedin",
+            "social_youtube",
+            "social_github",
+            "social_telegram",
+            "google_ai_endpoint",
+            "openai_endpoint",
+            "deepseek_endpoint",
+            "blackbox_endpoint",
+            "chat_provider",
+            "site_texts",
         )
 
 
@@ -107,3 +143,62 @@ class UsageLogSerializer(serializers.ModelSerializer):
     class Meta:
         model = UsageLog
         fields = ("id", "user", "action", "created_at", "metadata")
+
+
+class PremiumKeyRequestSerializer(serializers.ModelSerializer):
+    user = UserSerializer(read_only=True)
+    user_id = serializers.IntegerField(write_only=True, required=False)
+    approved_by_username = serializers.CharField(source="approved_by.username", read_only=True)
+
+    class Meta:
+        model = PremiumKeyRequest
+        fields = (
+            "id",
+            "user",
+            "user_id",
+            "reason",
+            "status",
+            "admin_note",
+            "approved_by_username",
+            "created_at",
+            "updated_at",
+        )
+        read_only_fields = ("status", "approved_by", "created_at", "updated_at")
+
+
+class UserActivityLogSerializer(serializers.ModelSerializer):
+    user = UserSerializer(read_only=True)
+    username = serializers.CharField(source="user.username", read_only=True)
+
+    class Meta:
+        model = UserActivityLog
+        fields = (
+            "id",
+            "user",
+            "username",
+            "action",
+            "ip_address",
+            "user_agent",
+            "created_at",
+            "metadata",
+        )
+
+
+class AIChatLogSerializer(serializers.ModelSerializer):
+    user = UserSerializer(read_only=True)
+    username = serializers.CharField(source="user.username", read_only=True)
+
+    class Meta:
+        model = AIChatLog
+        fields = (
+            "id",
+            "user",
+            "username",
+            "message",
+            "response",
+            "language",
+            "provider",
+            "ip_address",
+            "user_agent",
+            "created_at",
+        )

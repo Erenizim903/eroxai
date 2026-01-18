@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import {
+  Avatar,
   Box,
   Button,
   Card,
@@ -10,11 +11,32 @@ import {
   Grid,
   Stack,
   Switch,
-  Tab,
-  Tabs,
   TextField,
   Typography,
 } from '@mui/material'
+import DashboardIcon from '@mui/icons-material/Dashboard'
+import PeopleIcon from '@mui/icons-material/People'
+import KeyIcon from '@mui/icons-material/Key'
+import DescriptionIcon from '@mui/icons-material/Description'
+import ListAltIcon from '@mui/icons-material/ListAlt'
+import SettingsIcon from '@mui/icons-material/Settings'
+import AnalyticsIcon from '@mui/icons-material/Analytics'
+import BarChartIcon from '@mui/icons-material/BarChart'
+import TimelineIcon from '@mui/icons-material/Timeline'
+import CategoryIcon from '@mui/icons-material/Category'
+import SearchIcon from '@mui/icons-material/Search'
+import RequestQuoteIcon from '@mui/icons-material/RequestQuote'
+import CheckCircleIcon from '@mui/icons-material/CheckCircle'
+import CancelIcon from '@mui/icons-material/Cancel'
+import Dialog from '@mui/material/Dialog'
+import DialogTitle from '@mui/material/DialogTitle'
+import DialogContent from '@mui/material/DialogContent'
+import DialogActions from '@mui/material/DialogActions'
+import Chip from '@mui/material/Chip'
+import Badge from '@mui/material/Badge'
+import InputBase from '@mui/material/InputBase'
+import Paper from '@mui/material/Paper'
+import Collapse from '@mui/material/Collapse'
 import { useSnackbar } from 'notistack'
 import Navbar from '../components/common/Navbar'
 import Footer from '../components/common/Footer'
@@ -25,11 +47,18 @@ import {
   deleteAdminUser,
   deleteTemplateField,
   fetchAdminLogs,
+  fetchAdminActivityLogs,
   fetchAdminUsers,
   fetchPremiumKeys,
   updateSiteSettings,
   updateTemplateField,
+  fetchAdminAnalytics,
 } from '../services/adminService'
+import {
+  getAdminPremiumRequests,
+  approvePremiumRequest,
+  rejectPremiumRequest,
+} from '../services/premiumRequestService'
 import { createTemplate, listTemplates } from '../services/templateService'
 import { fetchSiteSettings } from '../services/siteService'
 import { getDocument, GlobalWorkerOptions } from 'pdfjs-dist'
@@ -39,15 +68,23 @@ GlobalWorkerOptions.workerSrc = workerSrc
 
 const AdminDashboard = () => {
   const { enqueueSnackbar } = useSnackbar()
-  const [tab, setTab] = useState('users')
+  const [tab, setTab] = useState('overview')
   const [users, setUsers] = useState([])
   const [logs, setLogs] = useState([])
   const [keys, setKeys] = useState([])
   const [templates, setTemplates] = useState([])
+  const [premiumRequests, setPremiumRequests] = useState([])
+  const [requestStatusFilter, setRequestStatusFilter] = useState(null)
+  const [approveDialog, setApproveDialog] = useState({ open: false, request: null })
+  const [rejectDialog, setRejectDialog] = useState({ open: false, request: null })
+  const [approveForm, setApproveForm] = useState({ key_code: '', max_uses: 1, admin_note: '' })
+  const [rejectForm, setRejectForm] = useState({ admin_note: '' })
   const [newUser, setNewUser] = useState({
     username: '',
     email: '',
     password: '',
+    first_name: '',
+    last_name: '',
     is_staff: false,
     is_superuser: false,
     is_active: true,
@@ -60,6 +97,19 @@ const AdminDashboard = () => {
     address: '',
     hero_title: '',
     hero_subtitle: '',
+    copyright_text: '',
+    social_facebook: '',
+    social_instagram: '',
+    social_twitter: '',
+    social_linkedin: '',
+    social_youtube: '',
+    social_github: '',
+    social_telegram: '',
+    google_ai_endpoint: 'https://vision.googleapis.com/v1/images:annotate',
+    openai_endpoint: 'https://api.openai.com/v1/chat/completions',
+    deepseek_endpoint: 'https://api.deepseek.com/v1/chat/completions',
+    blackbox_endpoint: 'https://www.blackbox.ai/api/chat',
+    chat_provider: 'openai',
     logo: null,
   })
   const [newTemplate, setNewTemplate] = useState({
@@ -93,20 +143,78 @@ const AdminDashboard = () => {
   const [pdfDoc, setPdfDoc] = useState(null)
   const [pageCount, setPageCount] = useState(1)
   const [currentPage, setCurrentPage] = useState(1)
+  const [analytics, setAnalytics] = useState(null)
+  const [menuSearch, setMenuSearch] = useState('')
+  const [expandedCategories, setExpandedCategories] = useState({ dashboard: true, management: true, settings: true })
+
+  const stats = [
+    { label: 'Kullanıcılar', value: users.length, icon: <PeopleIcon color="primary" /> },
+    { label: 'Şablonlar', value: templates.length, icon: <DescriptionIcon color="primary" /> },
+    { label: 'Premium Key', value: keys.length, icon: <KeyIcon color="primary" /> },
+    { label: 'Loglar', value: logs.length, icon: <ListAltIcon color="primary" /> },
+  ]
+
+  const menuCategories = [
+    {
+      id: 'dashboard',
+      label: 'Dashboard',
+      icon: <DashboardIcon />,
+      items: [
+        { key: 'overview', label: 'Genel Bakış', icon: <DashboardIcon />, badge: null },
+        { key: 'analytics', label: 'Analytics', icon: <AnalyticsIcon />, badge: null },
+      ],
+    },
+    {
+      id: 'management',
+      label: 'Yönetim',
+      icon: <CategoryIcon />,
+      items: [
+        { key: 'users', label: 'Kullanıcılar', icon: <PeopleIcon />, badge: users.length },
+        { key: 'templates', label: 'Şablonlar', icon: <DescriptionIcon />, badge: templates.length },
+        { key: 'keys', label: 'Premium Key', icon: <KeyIcon />, badge: keys.length },
+        { key: 'requests', label: 'Key Başvuruları', icon: <RequestQuoteIcon />, badge: premiumRequests.filter(r => r.status === 'pending').length },
+        { key: 'logs', label: 'Loglar', icon: <ListAltIcon />, badge: logs.length },
+      ],
+    },
+    {
+      id: 'settings',
+      label: 'Ayarlar',
+      icon: <SettingsIcon />,
+      items: [
+        { key: 'settings', label: 'Site Ayarları', icon: <SettingsIcon />, badge: null },
+      ],
+    },
+  ]
+
+  const allMenuItems = menuCategories.flatMap((cat) => cat.items)
+  const filteredMenuItems = menuCategories
+    .map((cat) => ({
+      ...cat,
+      items: cat.items.filter(
+        (item) => item.label.toLowerCase().includes(menuSearch.toLowerCase()) || item.key.includes(menuSearch.toLowerCase())
+      ),
+    }))
+    .filter((cat) => cat.items.length > 0)
 
   const loadAll = async () => {
-    const [userData, logData, keyData, templateData, siteData] = await Promise.all([
+    const [userData, logData, activityLogData, keyData, templateData, siteData, analyticsData, requestsData] = await Promise.all([
       fetchAdminUsers(),
       fetchAdminLogs(),
+      fetchAdminActivityLogs().catch(() => []),
       fetchPremiumKeys(),
       listTemplates(),
       fetchSiteSettings(),
+      fetchAdminAnalytics().catch(() => null),
+      getAdminPremiumRequests().catch(() => []),
     ])
     setUsers(userData)
     setLogs(logData)
+    setActivityLogs(activityLogData)
     setKeys(keyData)
     setTemplates(templateData)
     setSiteSettings((prev) => ({ ...prev, ...siteData }))
+    setAnalytics(analyticsData)
+    setPremiumRequests(requestsData)
   }
 
   useEffect(() => {
@@ -121,6 +229,8 @@ const AdminDashboard = () => {
         username: '',
         email: '',
         password: '',
+        first_name: '',
+        last_name: '',
         is_staff: false,
         is_superuser: false,
         is_active: true,
@@ -142,6 +252,37 @@ const AdminDashboard = () => {
     enqueueSnackbar(`Key oluşturuldu: ${data.code}`, { variant: 'success' })
     setPremiumKey({ code: '', max_uses: 1 })
     loadAll()
+  }
+
+  const handleApproveRequest = async () => {
+    if (!approveDialog.request) return
+    try {
+      await approvePremiumRequest(
+        approveDialog.request.id,
+        approveForm.key_code || undefined,
+        approveForm.max_uses,
+        approveForm.admin_note
+      )
+      enqueueSnackbar('Başvuru onaylandı ve premium key oluşturuldu', { variant: 'success' })
+      setApproveDialog({ open: false, request: null })
+      setApproveForm({ key_code: '', max_uses: 1, admin_note: '' })
+      loadAll()
+    } catch (error) {
+      enqueueSnackbar('Onaylama hatası', { variant: 'error' })
+    }
+  }
+
+  const handleRejectRequest = async () => {
+    if (!rejectDialog.request) return
+    try {
+      await rejectPremiumRequest(rejectDialog.request.id, rejectForm.admin_note)
+      enqueueSnackbar('Başvuru reddedildi', { variant: 'success' })
+      setRejectDialog({ open: false, request: null })
+      setRejectForm({ admin_note: '' })
+      loadAll()
+    } catch (error) {
+      enqueueSnackbar('Reddetme hatası', { variant: 'error' })
+    }
   }
 
   const handleAddField = async () => {
@@ -172,6 +313,19 @@ const AdminDashboard = () => {
     payload.append('address', siteSettings.address)
     payload.append('hero_title', siteSettings.hero_title)
     payload.append('hero_subtitle', siteSettings.hero_subtitle)
+    payload.append('copyright_text', siteSettings.copyright_text || '')
+    payload.append('social_facebook', siteSettings.social_facebook || '')
+    payload.append('social_instagram', siteSettings.social_instagram || '')
+    payload.append('social_twitter', siteSettings.social_twitter || '')
+    payload.append('social_linkedin', siteSettings.social_linkedin || '')
+    payload.append('social_youtube', siteSettings.social_youtube || '')
+    payload.append('social_github', siteSettings.social_github || '')
+    payload.append('social_telegram', siteSettings.social_telegram || '')
+    payload.append('google_ai_endpoint', siteSettings.google_ai_endpoint || '')
+    payload.append('openai_endpoint', siteSettings.openai_endpoint || '')
+    payload.append('deepseek_endpoint', siteSettings.deepseek_endpoint || '')
+    payload.append('blackbox_endpoint', siteSettings.blackbox_endpoint || '')
+    payload.append('chat_provider', siteSettings.chat_provider || 'openai')
     if (siteSettings.logo) {
       payload.append('logo', siteSettings.logo)
     }
@@ -253,19 +407,245 @@ const AdminDashboard = () => {
   return (
     <Box>
       <Navbar />
-      <Container maxWidth="lg" sx={{ py: 5 }}>
-        <Typography variant="h3" sx={{ mb: 2 }}>
-          Admin Panel
-        </Typography>
-        <Tabs value={tab} onChange={(_, value) => setTab(value)} sx={{ mb: 3 }}>
-          <Tab value="users" label="Kullanıcılar" />
-          <Tab value="templates" label="Şablon Alanları" />
-          <Tab value="keys" label="Premium Key" />
-          <Tab value="logs" label="Loglar" />
-          <Tab value="settings" label="Site Ayarları" />
-        </Tabs>
+      <Container maxWidth="xl" sx={{ py: 4 }}>
+        <Grid container spacing={3}>
+          <Grid item xs={12} md={3}>
+            <Card sx={{ position: 'sticky', top: 20 }}>
+              <CardContent>
+                <Stack spacing={2}>
+                  <Stack direction="row" spacing={2} alignItems="center">
+                    <Avatar>AD</Avatar>
+                    <Box>
+                      <Typography fontWeight={700}>Admin Dashboard</Typography>
+                      <Typography variant="caption" color="text.secondary">
+                        Yönetim Paneli
+                      </Typography>
+                    </Box>
+                  </Stack>
+                  <Divider />
+                  <Paper
+                    component="form"
+                    sx={{ p: '2px 4px', display: 'flex', alignItems: 'center', mb: 1 }}
+                    elevation={0}
+                  >
+                    <InputBase
+                      sx={{ ml: 1, flex: 1 }}
+                      placeholder="Menü ara..."
+                      value={menuSearch}
+                      onChange={(e) => setMenuSearch(e.target.value)}
+                      startAdornment={<SearchIcon sx={{ color: 'text.secondary', mr: 1 }} />}
+                    />
+                  </Paper>
+                  <Stack spacing={1}>
+                    {filteredMenuItems.map((category) => (
+                      <Box key={category.id}>
+                        <Button
+                          fullWidth
+                          startIcon={category.icon}
+                          onClick={() =>
+                            setExpandedCategories((prev) => ({
+                              ...prev,
+                              [category.id]: !prev[category.id],
+                            }))
+                          }
+                          sx={{
+                            justifyContent: 'flex-start',
+                            textTransform: 'none',
+                            color: 'text.secondary',
+                            fontWeight: 600,
+                          }}
+                        >
+                          {category.label}
+                        </Button>
+                        <Collapse in={expandedCategories[category.id]}>
+                          <Stack spacing={0.5} sx={{ pl: 2, mt: 0.5 }}>
+                            {category.items.map((item) => (
+                              <Button
+                                key={item.key}
+                                startIcon={item.icon}
+                                variant={tab === item.key ? 'contained' : 'text'}
+                                onClick={() => setTab(item.key)}
+                                sx={{
+                                  justifyContent: 'flex-start',
+                                  textTransform: 'none',
+                                  fontSize: '0.875rem',
+                                }}
+                              >
+                                {item.label}
+                                {item.badge !== null && (
+                                  <Badge
+                                    badgeContent={item.badge}
+                                    color="primary"
+                                    sx={{ ml: 'auto', mr: 1 }}
+                                  />
+                                )}
+                              </Button>
+                            ))}
+                          </Stack>
+                        </Collapse>
+                      </Box>
+                    ))}
+                  </Stack>
+                </Stack>
+              </CardContent>
+            </Card>
+          </Grid>
 
-        {tab === 'users' && (
+          <Grid item xs={12} md={9}>
+            <Stack spacing={3}>
+              {tab === 'overview' && (
+                <Stack spacing={3}>
+                  <Typography variant="h3">Genel Bakış</Typography>
+                  <Grid container spacing={3}>
+                    {stats.map((stat) => (
+                      <Grid item xs={12} md={3} key={stat.label}>
+                        <Card
+                          sx={{
+                            transition: 'all 0.3s ease',
+                            '&:hover': { transform: 'translateY(-4px)', boxShadow: 4 },
+                          }}
+                        >
+                          <CardContent>
+                            <Stack spacing={2}>
+                              {stat.icon}
+                              <Typography variant="h4">{stat.value}</Typography>
+                              <Typography color="text.secondary">{stat.label}</Typography>
+                            </Stack>
+                          </CardContent>
+                        </Card>
+                      </Grid>
+                    ))}
+                  </Grid>
+                  {analytics && (
+                    <Grid container spacing={3} sx={{ mt: 2 }}>
+                      <Grid item xs={12} md={6}>
+                        <Card>
+                          <CardContent>
+                            <Stack spacing={2}>
+                              <Typography variant="h6">Aktif Kullanıcılar</Typography>
+                              <Typography variant="h3">{analytics.overview?.active_users || 0}</Typography>
+                              <Typography variant="caption" color="text.secondary">
+                                30 gün içinde giriş yapan
+                              </Typography>
+                            </Stack>
+                          </CardContent>
+                        </Card>
+                      </Grid>
+                      <Grid item xs={12} md={6}>
+                        <Card>
+                          <CardContent>
+                            <Stack spacing={2}>
+                              <Typography variant="h6">Premium Kullanıcılar</Typography>
+                              <Typography variant="h3">{analytics.overview?.premium_users || 0}</Typography>
+                              <Typography variant="caption" color="text.secondary">
+                                Aktif premium üyeler
+                              </Typography>
+                            </Stack>
+                          </CardContent>
+                        </Card>
+                      </Grid>
+                      <Grid item xs={12} md={6}>
+                        <Card>
+                          <CardContent>
+                            <Stack spacing={2}>
+                              <Typography variant="h6">Son 7 Gün</Typography>
+                              <Typography variant="h3">{analytics.overview?.usage_last_7_days || 0}</Typography>
+                              <Typography variant="caption" color="text.secondary">
+                                Kullanım sayısı
+                              </Typography>
+                            </Stack>
+                          </CardContent>
+                        </Card>
+                      </Grid>
+                      <Grid item xs={12} md={6}>
+                        <Card>
+                          <CardContent>
+                            <Stack spacing={2}>
+                              <Typography variant="h6">Son 30 Gün</Typography>
+                              <Typography variant="h3">{analytics.overview?.usage_last_30_days || 0}</Typography>
+                              <Typography variant="caption" color="text.secondary">
+                                Kullanım sayısı
+                              </Typography>
+                            </Stack>
+                          </CardContent>
+                        </Card>
+                      </Grid>
+                    </Grid>
+                  )}
+                </Stack>
+              )}
+
+              {tab === 'analytics' && (
+                <Stack spacing={3}>
+                  <Typography variant="h3">Analytics & İstatistikler</Typography>
+                  {analytics ? (
+                    <Grid container spacing={3}>
+                      <Grid item xs={12}>
+                        <Card>
+                          <CardContent>
+                            <Typography variant="h6" gutterBottom>
+                              Genel İstatistikler
+                            </Typography>
+                            <Grid container spacing={3} sx={{ mt: 1 }}>
+                              <Grid item xs={12} md={3}>
+                                <Typography variant="caption" color="text.secondary">
+                                  Toplam Kullanıcı
+                                </Typography>
+                                <Typography variant="h5">{analytics.overview?.total_users || 0}</Typography>
+                              </Grid>
+                              <Grid item xs={12} md={3}>
+                                <Typography variant="caption" color="text.secondary">
+                                  Toplam Belge
+                                </Typography>
+                                <Typography variant="h5">{analytics.overview?.total_documents || 0}</Typography>
+                              </Grid>
+                              <Grid item xs={12} md={3}>
+                                <Typography variant="caption" color="text.secondary">
+                                  Toplam Şablon
+                                </Typography>
+                                <Typography variant="h5">{analytics.overview?.total_templates || 0}</Typography>
+                              </Grid>
+                              <Grid item xs={12} md={3}>
+                                <Typography variant="caption" color="text.secondary">
+                                  Toplam Key
+                                </Typography>
+                                <Typography variant="h5">{analytics.overview?.total_keys || 0}</Typography>
+                              </Grid>
+                            </Grid>
+                          </CardContent>
+                        </Card>
+                      </Grid>
+                      {analytics.action_stats && analytics.action_stats.length > 0 && (
+                        <Grid item xs={12}>
+                          <Card>
+                            <CardContent>
+                              <Typography variant="h6" gutterBottom>
+                                En Çok Kullanılan İşlemler (30 gün)
+                              </Typography>
+                              <Stack spacing={2} sx={{ mt: 2 }}>
+                                {analytics.action_stats.map((stat, idx) => (
+                                  <Stack key={idx} direction="row" justifyContent="space-between" alignItems="center">
+                                    <Typography>{stat.action}</Typography>
+                                    <Badge badgeContent={stat.count} color="primary" />
+                                  </Stack>
+                                ))}
+                              </Stack>
+                            </CardContent>
+                          </Card>
+                        </Grid>
+                      )}
+                    </Grid>
+                  ) : (
+                    <Card>
+                      <CardContent>
+                        <Typography>Analytics yükleniyor...</Typography>
+                      </CardContent>
+                    </Card>
+                  )}
+                </Stack>
+              )}
+
+              {tab === 'users' && (
           <Grid container spacing={3}>
             <Grid item xs={12} md={5}>
               <Card>
@@ -276,6 +656,16 @@ const AdminDashboard = () => {
                       label="Kullanıcı adı"
                       value={newUser.username}
                       onChange={(e) => setNewUser({ ...newUser, username: e.target.value })}
+                    />
+                    <TextField
+                      label="İsim"
+                      value={newUser.first_name}
+                      onChange={(e) => setNewUser({ ...newUser, first_name: e.target.value })}
+                    />
+                    <TextField
+                      label="Soyisim"
+                      value={newUser.last_name}
+                      onChange={(e) => setNewUser({ ...newUser, last_name: e.target.value })}
                     />
                     <TextField
                       label="E-posta"
@@ -341,12 +731,12 @@ const AdminDashboard = () => {
               </Card>
             </Grid>
           </Grid>
-        )}
+              )}
 
-        {tab === 'templates' && (
-          <Card>
-            <CardContent>
-              <Stack spacing={2}>
+              {tab === 'templates' && (
+                <Card>
+                  <CardContent>
+                    <Stack spacing={2}>
                 <Typography variant="h6">Yeni Şablon</Typography>
                 <TextField
                   label="Şablon adı"
@@ -589,15 +979,15 @@ const AdminDashboard = () => {
                     </CardContent>
                   </Card>
                 )}
-              </Stack>
-            </CardContent>
-          </Card>
-        )}
+                    </Stack>
+                  </CardContent>
+                </Card>
+              )}
 
-        {tab === 'keys' && (
-          <Card>
-            <CardContent>
-              <Stack spacing={2}>
+              {tab === 'keys' && (
+                <Card>
+                  <CardContent>
+                    <Stack spacing={2}>
                 <Typography variant="h6">Premium Key</Typography>
                 <TextField
                   label="Key (boş bırak otomatik)"
@@ -621,32 +1011,216 @@ const AdminDashboard = () => {
                     </Typography>
                   ))}
                 </Stack>
-              </Stack>
-            </CardContent>
-          </Card>
-        )}
+                    </Stack>
+                  </CardContent>
+                </Card>
+              )}
 
-        {tab === 'logs' && (
-          <Card>
-            <CardContent>
-              <Typography variant="h6">Loglar</Typography>
-              <Divider sx={{ my: 2 }} />
-              <Stack spacing={1}>
-                {logs.map((log) => (
-                  <Typography key={log.id}>
-                    {log.user} · {log.action} · {new Date(log.created_at).toLocaleString()}
-                  </Typography>
-                ))}
-              </Stack>
-            </CardContent>
-          </Card>
-        )}
+              {tab === 'requests' && (
+                <Card>
+                  <CardContent>
+                    <Stack spacing={3}>
+                      <Box>
+                        <Typography variant="h6" sx={{ mb: 2 }}>Premium Key Başvuruları</Typography>
+                        <Stack direction="row" spacing={1} sx={{ mb: 3 }}>
+                          <Chip
+                            label="Tümü"
+                            onClick={() => setRequestStatusFilter(null)}
+                            color={requestStatusFilter === null ? 'primary' : 'default'}
+                            clickable
+                          />
+                          <Chip
+                            label="Bekleyen"
+                            onClick={() => setRequestStatusFilter('pending')}
+                            color={requestStatusFilter === 'pending' ? 'primary' : 'default'}
+                            clickable
+                          />
+                          <Chip
+                            label="Onaylandı"
+                            onClick={() => setRequestStatusFilter('approved')}
+                            color={requestStatusFilter === 'approved' ? 'primary' : 'default'}
+                            clickable
+                          />
+                          <Chip
+                            label="Reddedildi"
+                            onClick={() => setRequestStatusFilter('rejected')}
+                            color={requestStatusFilter === 'rejected' ? 'primary' : 'default'}
+                            clickable
+                          />
+                        </Stack>
+                      </Box>
+                      <Divider />
+                      <Stack spacing={2}>
+                        {premiumRequests
+                          .filter((req) => !requestStatusFilter || req.status === requestStatusFilter)
+                          .map((req) => (
+                            <Card key={req.id} variant="outlined" sx={{ p: 3 }}>
+                              <Stack spacing={2}>
+                                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                                  <Box>
+                                    <Typography variant="h6" sx={{ fontWeight: 700 }}>
+                                      {req.user?.username || 'Unknown'}
+                                    </Typography>
+                                    <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+                                      {req.user?.email || ''}
+                                    </Typography>
+                                    <Typography variant="caption" sx={{ color: 'text.secondary', display: 'block', mt: 1 }}>
+                                      {new Date(req.created_at).toLocaleString('tr-TR')}
+                                    </Typography>
+                                  </Box>
+                                  <Chip
+                                    icon={
+                                      req.status === 'approved' ? (
+                                        <CheckCircleIcon />
+                                      ) : req.status === 'rejected' ? (
+                                        <CancelIcon />
+                                      ) : (
+                                        <RequestQuoteIcon />
+                                      )
+                                    }
+                                    label={
+                                      req.status === 'approved'
+                                        ? 'Onaylandı'
+                                        : req.status === 'rejected'
+                                        ? 'Reddedildi'
+                                        : 'Beklemede'
+                                    }
+                                    color={
+                                      req.status === 'approved'
+                                        ? 'success'
+                                        : req.status === 'rejected'
+                                        ? 'error'
+                                        : 'warning'
+                                    }
+                                  />
+                                </Box>
+                                <Divider />
+                                <Box>
+                                  <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 600 }}>
+                                    Başvuru Nedeni:
+                                  </Typography>
+                                  <Typography variant="body2" sx={{ color: 'text.secondary', whiteSpace: 'pre-wrap' }}>
+                                    {req.reason || 'Neden belirtilmemiş'}
+                                  </Typography>
+                                </Box>
+                                {req.admin_note && (
+                                  <Box
+                                    sx={{
+                                      p: 2,
+                                      background: 'rgba(102, 126, 234, 0.1)',
+                                      borderRadius: 1,
+                                      borderLeft: '3px solid #667eea',
+                                    }}
+                                  >
+                                    <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 600 }}>
+                                      Admin Notu:
+                                    </Typography>
+                                    <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+                                      {req.admin_note}
+                                    </Typography>
+                                  </Box>
+                                )}
+                                {req.status === 'pending' && (
+                                  <Stack direction="row" spacing={2}>
+                                    <Button
+                                      variant="contained"
+                                      color="success"
+                                      startIcon={<CheckCircleIcon />}
+                                      onClick={() => setApproveDialog({ open: true, request: req })}
+                                    >
+                                      Onayla
+                                    </Button>
+                                    <Button
+                                      variant="contained"
+                                      color="error"
+                                      startIcon={<CancelIcon />}
+                                      onClick={() => setRejectDialog({ open: true, request: req })}
+                                    >
+                                      Reddet
+                                    </Button>
+                                  </Stack>
+                                )}
+                              </Stack>
+                            </Card>
+                          ))}
+                        {premiumRequests.filter((req) => !requestStatusFilter || req.status === requestStatusFilter).length === 0 && (
+                          <Box sx={{ textAlign: 'center', py: 4 }}>
+                            <Typography variant="body1" sx={{ color: 'text.secondary' }}>
+                              Başvuru bulunamadı
+                            </Typography>
+                          </Box>
+                        )}
+                      </Stack>
+                    </Stack>
+                  </CardContent>
+                </Card>
+              )}
 
-        {tab === 'settings' && (
-          <Card>
-            <CardContent>
-              <Stack spacing={2}>
-                <Typography variant="h6">Site Ayarları</Typography>
+              {tab === 'logs' && (
+                <Card>
+                  <CardContent>
+                    <Stack spacing={3}>
+                      <Box>
+                        <Typography variant="h6" sx={{ mb: 2 }}>Kullanım Logları</Typography>
+                        <Divider sx={{ my: 2 }} />
+                        <Stack spacing={1}>
+                          {logs.map((log) => (
+                            <Paper key={log.id} sx={{ p: 2, background: 'rgba(102, 126, 234, 0.05)' }}>
+                              <Typography variant="body2">
+                                <strong>{log.user}</strong> · {log.action} · {new Date(log.created_at).toLocaleString('tr-TR')}
+                              </Typography>
+                            </Paper>
+                          ))}
+                        </Stack>
+                      </Box>
+                      <Divider />
+                      <Box>
+                        <Typography variant="h6" sx={{ mb: 2 }}>Kullanıcı Aktivite Logları (Giriş/Çıkış/IP)</Typography>
+                        <Divider sx={{ my: 2 }} />
+                        <Stack spacing={1}>
+                          {activityLogs.length === 0 ? (
+                            <Typography variant="body2" color="text.secondary">Henüz aktivite logu yok</Typography>
+                          ) : (
+                            activityLogs.map((log) => (
+                              <Paper key={log.id} sx={{ p: 2, background: 'rgba(102, 126, 234, 0.05)' }}>
+                                <Stack direction="row" spacing={2} justifyContent="space-between" alignItems="center">
+                                  <Box>
+                                    <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                                      {log.username || log.user?.username || 'Unknown'}
+                                    </Typography>
+                                    <Typography variant="caption" color="text.secondary">
+                                      {log.action.toUpperCase()} · {log.ip_address || 'N/A'} · {new Date(log.created_at).toLocaleString('tr-TR')}
+                                    </Typography>
+                                  </Box>
+                                  <Chip
+                                    label={log.action}
+                                    size="small"
+                                    color={
+                                      log.action === 'login'
+                                        ? 'success'
+                                        : log.action === 'logout'
+                                        ? 'warning'
+                                        : log.action === 'register'
+                                        ? 'primary'
+                                        : 'default'
+                                    }
+                                  />
+                                </Stack>
+                              </Paper>
+                            ))
+                          )}
+                        </Stack>
+                      </Box>
+                    </Stack>
+                  </CardContent>
+                </Card>
+              )}
+
+              {tab === 'settings' && (
+                <Card>
+                  <CardContent>
+                    <Stack spacing={2}>
+                      <Typography variant="h6">Site Ayarları</Typography>
                 <TextField
                   label="Site adı"
                   value={siteSettings.site_name}
@@ -681,16 +1255,198 @@ const AdminDashboard = () => {
                   label="Hero alt başlık"
                   value={siteSettings.hero_subtitle}
                   onChange={(e) => setSiteSettings({ ...siteSettings, hero_subtitle: e.target.value })}
+                  multiline
+                  rows={2}
                 />
-                <input type="file" onChange={(e) => setSiteSettings({ ...siteSettings, logo: e.target.files?.[0] })} />
-                <Button variant="contained" onClick={handleSaveSettings}>
-                  Kaydet
-                </Button>
-              </Stack>
-            </CardContent>
-          </Card>
-        )}
+                <TextField
+                  label="Copyright Metni"
+                  value={siteSettings.copyright_text}
+                  onChange={(e) => setSiteSettings({ ...siteSettings, copyright_text: e.target.value })}
+                  placeholder="© 2026 EroxAI Document Studio. Tüm hakları saklıdır."
+                  helperText="Footer'da gösterilecek copyright metni"
+                />
+                <Divider sx={{ my: 2 }} />
+                <Typography variant="h6" sx={{ mb: 2 }}>
+                  Sosyal Medya Hesapları
+                </Typography>
+                <TextField
+                  label="Facebook URL"
+                  value={siteSettings.social_facebook}
+                  onChange={(e) => setSiteSettings({ ...siteSettings, social_facebook: e.target.value })}
+                  placeholder="https://facebook.com/..."
+                  fullWidth
+                />
+                <TextField
+                  label="Instagram URL"
+                  value={siteSettings.social_instagram}
+                  onChange={(e) => setSiteSettings({ ...siteSettings, social_instagram: e.target.value })}
+                  placeholder="https://instagram.com/..."
+                  fullWidth
+                />
+                <TextField
+                  label="Twitter/X URL"
+                  value={siteSettings.social_twitter}
+                  onChange={(e) => setSiteSettings({ ...siteSettings, social_twitter: e.target.value })}
+                  placeholder="https://twitter.com/..."
+                  fullWidth
+                />
+                <TextField
+                  label="LinkedIn URL"
+                  value={siteSettings.social_linkedin}
+                  onChange={(e) => setSiteSettings({ ...siteSettings, social_linkedin: e.target.value })}
+                  placeholder="https://linkedin.com/..."
+                  fullWidth
+                />
+                <TextField
+                  label="YouTube URL"
+                  value={siteSettings.social_youtube}
+                  onChange={(e) => setSiteSettings({ ...siteSettings, social_youtube: e.target.value })}
+                  placeholder="https://youtube.com/..."
+                  fullWidth
+                />
+                <TextField
+                  label="GitHub URL"
+                  value={siteSettings.social_github}
+                  onChange={(e) => setSiteSettings({ ...siteSettings, social_github: e.target.value })}
+                  placeholder="https://github.com/..."
+                  fullWidth
+                />
+                <TextField
+                  label="Telegram URL"
+                  value={siteSettings.social_telegram}
+                  onChange={(e) => setSiteSettings({ ...siteSettings, social_telegram: e.target.value })}
+                  placeholder="https://t.me/..."
+                  fullWidth
+                />
+                <Divider sx={{ my: 2 }} />
+                <Typography variant="h6" sx={{ mb: 2 }}>
+                  AI API Endpoints
+                </Typography>
+                <TextField
+                  label="Google AI Endpoint"
+                  value={siteSettings.google_ai_endpoint}
+                  onChange={(e) => setSiteSettings({ ...siteSettings, google_ai_endpoint: e.target.value })}
+                  placeholder="https://vision.googleapis.com/v1/images:annotate"
+                  fullWidth
+                  sx={{ mb: 2 }}
+                />
+                <TextField
+                  label="OpenAI Endpoint"
+                  value={siteSettings.openai_endpoint}
+                  onChange={(e) => setSiteSettings({ ...siteSettings, openai_endpoint: e.target.value })}
+                  placeholder="https://api.openai.com/v1/chat/completions"
+                  fullWidth
+                  sx={{ mb: 2 }}
+                />
+                <TextField
+                  label="DeepSeek Endpoint"
+                  value={siteSettings.deepseek_endpoint}
+                  onChange={(e) => setSiteSettings({ ...siteSettings, deepseek_endpoint: e.target.value })}
+                  placeholder="https://api.deepseek.com/v1/chat/completions"
+                  fullWidth
+                  sx={{ mb: 2 }}
+                />
+                <TextField
+                  label="Blackbox Endpoint"
+                  value={siteSettings.blackbox_endpoint}
+                  onChange={(e) => setSiteSettings({ ...siteSettings, blackbox_endpoint: e.target.value })}
+                  placeholder="https://www.blackbox.ai/api/chat"
+                  fullWidth
+                  sx={{ mb: 2 }}
+                />
+                <TextField
+                  select
+                  label="Chat Provider"
+                  value={siteSettings.chat_provider}
+                  onChange={(e) => setSiteSettings({ ...siteSettings, chat_provider: e.target.value })}
+                  fullWidth
+                  SelectProps={{
+                    native: true,
+                  }}
+                >
+                  <option value="openai">OpenAI</option>
+                  <option value="deepseek">DeepSeek</option>
+                  <option value="blackbox">Blackbox</option>
+                </TextField>
+                <Divider sx={{ my: 2 }} />
+                <Box>
+                  <Typography variant="subtitle2" sx={{ mb: 1 }}>
+                    Logo Yükle
+                  </Typography>
+                  <input type="file" accept="image/*" onChange={(e) => setSiteSettings({ ...siteSettings, logo: e.target.files?.[0] })} />
+                </Box>
+                      <Button variant="contained" onClick={handleSaveSettings}>
+                        Kaydet
+                      </Button>
+                    </Stack>
+                  </CardContent>
+                </Card>
+              )}
+            </Stack>
+          </Grid>
+        </Grid>
       </Container>
+
+      {/* Approve Dialog */}
+      <Dialog open={approveDialog.open} onClose={() => setApproveDialog({ open: false, request: null })} maxWidth="sm" fullWidth>
+        <DialogTitle>Başvuruyu Onayla</DialogTitle>
+        <DialogContent>
+          <Stack spacing={2} sx={{ mt: 1 }}>
+            <TextField
+              label="Key Kodu (boş bırak otomatik oluştur)"
+              value={approveForm.key_code}
+              onChange={(e) => setApproveForm({ ...approveForm, key_code: e.target.value })}
+              fullWidth
+            />
+            <TextField
+              label="Maks Kullanım"
+              type="number"
+              value={approveForm.max_uses}
+              onChange={(e) => setApproveForm({ ...approveForm, max_uses: parseInt(e.target.value) || 1 })}
+              fullWidth
+            />
+            <TextField
+              label="Admin Notu (opsiyonel)"
+              multiline
+              rows={3}
+              value={approveForm.admin_note}
+              onChange={(e) => setApproveForm({ ...approveForm, admin_note: e.target.value })}
+              fullWidth
+            />
+          </Stack>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setApproveDialog({ open: false, request: null })}>İptal</Button>
+          <Button variant="contained" color="success" onClick={handleApproveRequest}>
+            Onayla
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Reject Dialog */}
+      <Dialog open={rejectDialog.open} onClose={() => setRejectDialog({ open: false, request: null })} maxWidth="sm" fullWidth>
+        <DialogTitle>Başvuruyu Reddet</DialogTitle>
+        <DialogContent>
+          <Stack spacing={2} sx={{ mt: 1 }}>
+            <TextField
+              label="Red Nedeni (opsiyonel)"
+              multiline
+              rows={4}
+              value={rejectForm.admin_note}
+              onChange={(e) => setRejectForm({ ...rejectForm, admin_note: e.target.value })}
+              fullWidth
+              placeholder="Kullanıcıya gösterilecek red nedeni..."
+            />
+          </Stack>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setRejectDialog({ open: false, request: null })}>İptal</Button>
+          <Button variant="contained" color="error" onClick={handleRejectRequest}>
+            Reddet
+          </Button>
+        </DialogActions>
+      </Dialog>
+
       <Footer />
     </Box>
   )

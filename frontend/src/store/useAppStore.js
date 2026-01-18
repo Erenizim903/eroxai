@@ -12,6 +12,7 @@ const initialState = loadJSON(STORAGE_KEYS.APP_STATE, {
   targetLanguage: 'tr',
   history: [],
   settings: defaultSettings,
+  themePreset: 'ocean',
 })
 
 export const useAppStore = create((set, get) => ({
@@ -50,6 +51,10 @@ export const useAppStore = create((set, get) => ({
   updateSettings: (settings) => {
     set({ settings })
     get().persist({ settings })
+  },
+  setThemePreset: (themePreset) => {
+    set({ themePreset })
+    get().persist({ themePreset })
   },
   addHistory: (entry) => {
     const history = [entry, ...get().history].slice(0, 50)

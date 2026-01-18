@@ -11,8 +11,10 @@ import { useEffect } from 'react'
 
 const navItems = [
   { labelKey: 'nav.home', to: '/' },
-  { labelKey: 'nav.workspace', to: '/workspace' },
   { labelKey: 'nav.dashboard', to: '/dashboard' },
+  { labelKey: 'nav.aiChat', to: '/ai-chat' },
+  { labelKey: 'nav.profile', to: '/profile' },
+  { labelKey: 'nav.themes', to: '/themes' },
   { labelKey: 'nav.admin', to: '/admin-panel' },
 ]
 

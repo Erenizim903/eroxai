@@ -3,6 +3,9 @@
     "home": "Home",
     "workspace": "Workspace",
     "dashboard": "Dashboard",
+    "aiChat": "AI Chat",
+    "profile": "Profile",
+    "themes": "Themes",
     "admin": "Admin"
   },
   "home": {

@@ -40,11 +40,21 @@ const baseTypography = {
   },
 }
 
-export const getTheme = (mode = 'dark') => {
+const presetPalettes = {
+  ocean: { primary: '#5B8CFF', secondary: '#30C48D' },
+  sunset: { primary: '#FF8F5B', secondary: '#F04438' },
+  violet: { primary: '#8B5CF6', secondary: '#EC4899' },
+  emerald: { primary: '#10B981', secondary: '#06B6D4' },
+}
+
+export const getTheme = (mode = 'dark', preset = 'ocean') => {
+  const colors = presetPalettes[preset] || presetPalettes.ocean
   const theme = createTheme({
     palette: {
       mode,
       ...basePalette,
+      primary: { main: colors.primary },
+      secondary: { main: colors.secondary },
       background: {
         default: mode === 'dark' ? '#0B1120' : '#F7F8FC',
         paper: mode === 'dark' ? '#111827' : '#FFFFFF',

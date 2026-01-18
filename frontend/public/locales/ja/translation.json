@@ -3,6 +3,9 @@
     "home": "ホーム",
     "workspace": "ワークスペース",
     "dashboard": "ダッシュボード",
+    "aiChat": "AIチャット",
+    "profile": "プロフィール",
+    "themes": "テーマ",
     "admin": "管理"
   },
   "home": {

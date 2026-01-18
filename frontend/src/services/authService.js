@@ -24,3 +24,11 @@ export const redeemPremiumKey = async (code) => {
   const { data } = await api.post('/auth/redeem-key/', { code })
   return data
 }
+
+export const logoutUser = async () => {
+  try {
+    await api.post('/auth/logout/')
+  } catch (error) {
+    // Silent fail - logout should work even if backend call fails
+  }
+}
