@@ -85,8 +85,9 @@ const SocialIconButton = ({ icon, href, color }) => (
 )
 
 const Home = () => {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
   const theme = useTheme()
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'))
   const siteSettings = useSiteStore((state) => state.settings)
   const heroRef = useRef(null)
   const { scrollYProgress } = useScroll({
@@ -116,7 +117,7 @@ const Home = () => {
         <Box ref={heroRef} sx={{ position: 'relative', pt: { xs: 8, md: 16 }, pb: { xs: 12, md: 20 }, minHeight: '90vh', display: 'flex', alignItems: 'center' }}>
           <motion.div style={{ opacity, scale }}>
             <Container maxWidth="lg">
-              <Grid container spacing={6} alignItems="center">
+              <Grid container spacing={4} alignItems="center">
                 <Grid item xs={12} md={6}>
                   <Stack spacing={4}>
                     <motion.div
@@ -131,9 +132,9 @@ const Home = () => {
                           background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
                           color: 'white',
                           fontWeight: 700,
-                          fontSize: '0.9rem',
+                          fontSize: { xs: '0.75rem', md: '0.9rem' },
                           px: 2,
-                          py: 2.5,
+                          py: { xs: 1.5, md: 2.5 },
                         }}
                       />
                       <TypewriterText
@@ -141,7 +142,7 @@ const Home = () => {
                         variant="h1"
                         speed={30}
                         sx={{
-                          fontSize: { xs: '2.5rem', md: '4.5rem', lg: '5.5rem' },
+                          fontSize: { xs: '2rem', sm: '3rem', md: '4.5rem', lg: '5.5rem' },
                           fontWeight: 900,
                           lineHeight: 1.1,
                           mb: 3,
@@ -158,7 +159,7 @@ const Home = () => {
                           color: alpha('#fff', 0.8),
                           mb: 4,
                           lineHeight: 1.8,
-                          fontSize: { xs: '1.1rem', md: '1.3rem' },
+                          fontSize: { xs: '1rem', sm: '1.1rem', md: '1.3rem' },
                         }}
                       >
                         {siteSettings?.hero_subtitle || t('home.hero.subtitle')}
@@ -171,11 +172,12 @@ const Home = () => {
                             variant="contained"
                             size="large"
                             endIcon={<ArrowForwardIcon />}
+                            fullWidth={isMobile}
                             sx={{
-                              px: 5,
-                              py: 1.8,
+                              px: { xs: 3, md: 5 },
+                              py: { xs: 1.5, md: 1.8 },
                               borderRadius: 3,
-                              fontSize: '1.1rem',
+                              fontSize: { xs: '0.95rem', md: '1.1rem' },
                               fontWeight: 700,
                               background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
                               boxShadow: '0 20px 40px rgba(102, 126, 234, 0.4)',
@@ -192,11 +194,12 @@ const Home = () => {
                           <Button
                             variant="outlined"
                             size="large"
+                            fullWidth={isMobile}
                             sx={{
-                              px: 5,
-                              py: 1.8,
+                              px: { xs: 3, md: 5 },
+                              py: { xs: 1.5, md: 1.8 },
                               borderRadius: 3,
-                              fontSize: '1.1rem',
+                              fontSize: { xs: '0.95rem', md: '1.1rem' },
                               fontWeight: 600,
                               borderWidth: 2,
                               borderColor: alpha('#667eea', 0.5),
@@ -212,7 +215,7 @@ const Home = () => {
                           </Button>
                         </motion.div>
                       </Stack>
-                      <Stack direction="row" spacing={2} flexWrap="wrap" gap={2}>
+                      <Stack direction="row" spacing={2} flexWrap="wrap" gap={2} sx={{ mb: 3 }}>
                         {[
                           { icon: <SpeedIcon />, text: 'Hızlı İşlem' },
                           { icon: <SecurityIcon />, text: 'Güvenli Sistem' },
@@ -232,73 +235,161 @@ const Home = () => {
                                 color: '#fff',
                                 fontWeight: 600,
                                 border: `1px solid ${alpha('#667eea', 0.3)}`,
+                                fontSize: { xs: '0.7rem', md: '0.875rem' },
                               }}
                             />
                           </motion.div>
                         ))}
                       </Stack>
                       {socialLinks.length > 0 && (
-                        <Stack direction="row" spacing={1} sx={{ mt: 4 }}>
-                          {socialLinks.map((link, idx) => (
-                            <SocialIconButton key={idx} icon={link.icon} href={link.url} color={link.color} />
-                          ))}
-                        </Stack>
+                        <Box sx={{ mt: 2 }}>
+                          <AnimatedText
+                            variant="body2"
+                            delay={0.6}
+                            sx={{
+                              color: alpha('#fff', 0.6),
+                              mb: 2,
+                              textAlign: { xs: 'center', md: 'left' },
+                              fontSize: { xs: '0.7rem', md: '0.875rem' },
+                            }}
+                          >
+                            {i18n.language === 'tr' ? 'Bizi Takip Edin' : i18n.language === 'ja' ? 'フォローしてください' : 'Follow Us'}
+                          </AnimatedText>
+                          <Stack
+                            direction="row"
+                            spacing={1.5}
+                            justifyContent={{ xs: 'center', md: 'flex-start' }}
+                            flexWrap="wrap"
+                            gap={1.5}
+                            sx={{ mt: 1 }}
+                          >
+                            {socialLinks.map((link, idx) => (
+                              <motion.div
+                                key={idx}
+                                initial={{ opacity: 0, scale: 0 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                transition={{ delay: 0.7 + idx * 0.1, type: 'spring', stiffness: 200 }}
+                                whileHover={{ scale: 1.15, y: -2 }}
+                                whileTap={{ scale: 0.95 }}
+                              >
+                                <IconButton
+                                  href={link.url}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  sx={{
+                                    width: { xs: 40, md: 48 },
+                                    height: { xs: 40, md: 48 },
+                                    borderRadius: '50%',
+                                    background: alpha(link.color || '#667eea', 0.15),
+                                    border: `2px solid ${alpha(link.color || '#667eea', 0.3)}`,
+                                    color: link.color || '#667eea',
+                                    transition: 'all 0.3s ease',
+                                    '&:hover': {
+                                      background: alpha(link.color || '#667eea', 0.25),
+                                      borderColor: link.color || '#667eea',
+                                      boxShadow: `0 8px 20px ${alpha(link.color || '#667eea', 0.4)}`,
+                                    },
+                                  }}
+                                >
+                                  {link.icon}
+                                </IconButton>
+                              </motion.div>
+                            ))}
+                          </Stack>
+                        </Box>
                       )}
                     </motion.div>
                   </Stack>
                 </Grid>
                 <Grid item xs={12} md={6}>
                   <motion.div
-                    initial={{ opacity: 0, x: 50 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ duration: 0.8, delay: 0.2 }}
+                    initial={{ opacity: 0, y: 30 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.8, delay: 0.3 }}
                   >
-                    <motion.div
-                      animate={{ y: [0, -20, 0] }}
-                      transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
+                    <Card
+                      sx={{
+                        p: { xs: 3, md: 6 },
+                        backdropFilter: 'blur(30px)',
+                        background: 'linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%)',
+                        border: `2px solid ${alpha('#667eea', 0.3)}`,
+                        borderRadius: 4,
+                        boxShadow: '0 30px 80px rgba(102, 126, 234, 0.2)',
+                        position: 'relative',
+                        overflow: 'hidden',
+                        '&::before': {
+                          content: '""',
+                          position: 'absolute',
+                          top: 0,
+                          left: 0,
+                          right: 0,
+                          height: '4px',
+                          background: 'linear-gradient(90deg, #667eea 0%, #764ba2 50%, #f093fb 100%)',
+                        },
+                      }}
                     >
-                      <Card
-                        sx={{
-                          p: 4,
-                          backdropFilter: 'blur(30px)',
-                          background: alpha('#fff', 0.05),
-                          border: `1px solid ${alpha('#667eea', 0.3)}`,
-                          borderRadius: 4,
-                          boxShadow: '0 30px 80px rgba(0,0,0,0.5)',
-                        }}
-                      >
-                        <CardContent>
-                          <Stack spacing={4}>
-                            <Box
+                      <CardContent>
+                        <Stack spacing={4} alignItems="center" textAlign="center">
+                          <Box
+                            sx={{
+                              width: { xs: 200, md: 300 },
+                              height: { xs: 150, md: 200 },
+                              borderRadius: 3,
+                              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              position: 'relative',
+                              overflow: 'hidden',
+                              boxShadow: '0 20px 60px rgba(102, 126, 234, 0.4)',
+                            }}
+                          >
+                            <motion.div
+                              animate={{ rotate: 360 }}
+                              transition={{ duration: 20, repeat: Infinity, ease: 'linear' }}
+                              style={{ position: 'absolute', width: '200%', height: '200%', background: 'radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%)' }}
+                            />
+                            <Stack spacing={1} alignItems="center" sx={{ zIndex: 1 }}>
+                              <AutoAwesomeIcon sx={{ fontSize: { xs: 60, md: 80 }, color: 'white' }} />
+                              <AutoAwesomeIcon sx={{ fontSize: { xs: 40, md: 50 }, color: 'white', opacity: 0.8 }} />
+                              <AutoAwesomeIcon sx={{ fontSize: { xs: 30, md: 40 }, color: 'white', opacity: 0.6 }} />
+                            </Stack>
+                          </Box>
+                          <Box>
+                            <TypewriterText
+                              text={i18n.language === 'tr' ? 'Profesyonel Belge Tasarımı' : i18n.language === 'ja' ? 'プロフェッショナル文書デザイン' : 'Professional Document Design'}
+                              variant="h4"
+                              speed={60}
                               sx={{
-                                width: '100%',
-                                height: 300,
-                                borderRadius: 3,
+                                fontWeight: 800,
+                                mb: 2,
                                 background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                position: 'relative',
-                                overflow: 'hidden',
+                                WebkitBackgroundClip: 'text',
+                                WebkitTextFillColor: 'transparent',
+                                fontSize: { xs: '1.5rem', sm: '1.75rem', md: '2.5rem' },
+                              }}
+                            />
+                            <AnimatedText
+                              variant="body1"
+                              delay={0.5}
+                              sx={{
+                                color: alpha('#fff', 0.8),
+                                lineHeight: 1.9,
+                                fontSize: { xs: '0.9rem', md: '1.1rem' },
+                                maxWidth: 800,
+                                mx: 'auto',
                               }}
                             >
-                              <motion.div
-                                animate={{ rotate: 360 }}
-                                transition={{ duration: 20, repeat: Infinity, ease: 'linear' }}
-                                style={{ position: 'absolute', width: '200%', height: '200%', background: 'radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%)' }}
-                              />
-                              <AutoAwesomeIcon sx={{ fontSize: 100, color: 'white', zIndex: 1 }} />
-                            </Box>
-                            <Typography variant="h5" sx={{ fontWeight: 700, color: 'white', textAlign: 'center' }}>
-                              {t('home.hero.demoTitle')}
-                            </Typography>
-                            <Typography variant="body1" sx={{ color: alpha('#fff', 0.7), textAlign: 'center', lineHeight: 1.8 }}>
-                              {t('home.hero.demoDesc')}
-                            </Typography>
-                          </Stack>
-                        </CardContent>
-                      </Card>
-                    </motion.div>
+                              {i18n.language === 'tr'
+                                ? 'Şablon seç, alanları doldur, Japonca formatında profesyonel belge oluştur. Fiş kesme, sözleşme doldurma, zehirli atık belgeleri ve diğer resmi evrakları hızlı ve kolay bir şekilde oluştur.'
+                                : i18n.language === 'ja'
+                                ? 'テンプレートを選択し、フィールドに入力し、日本語形式でプロフェッショナルな文書を作成します。レシート発行、契約書入力、有害廃棄物文書、その他の公式文書を迅速かつ簡単に作成できます。'
+                                : 'Select a template, fill in the fields, create professional documents in Japanese format. Create receipts, contracts, hazardous waste documents and other official documents quickly and easily.'}
+                            </AnimatedText>
+                          </Box>
+                        </Stack>
+                      </CardContent>
+                    </Card>
                   </motion.div>
                 </Grid>
               </Grid>

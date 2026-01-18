@@ -19,10 +19,13 @@ import SmartToyIcon from '@mui/icons-material/SmartToy'
 import { useTranslation } from 'react-i18next'
 import { sendChatMessage } from '../../services/chatService'
 import { useSnackbar } from 'notistack'
+import { useAuthStore } from '../../store/useAuthStore'
 
 const ChatBot = () => {
   const { t, i18n } = useTranslation()
   const { enqueueSnackbar } = useSnackbar()
+  const user = useAuthStore((state) => state.user)
+  const isPremium = user?.profile?.is_premium || false
   const [open, setOpen] = useState(false)
   const [messages, setMessages] = useState([
     {
@@ -49,6 +52,19 @@ const ChatBot = () => {
   const handleSend = async () => {
     if (!input.trim() || loading) return
     
+    // Premium kontrolü
+    if (!isPremium) {
+      enqueueSnackbar(
+        i18n.language === 'tr'
+          ? '🔒 Bu özellik premium üyeler için! Premium key girin.'
+          : i18n.language === 'ja'
+          ? '🔒 この機能はプレミアムメンバー専用です！プレミアムキーを入力してください。'
+          : '🔒 This feature is for premium members! Enter a premium key.',
+        { variant: 'warning' }
+      )
+      return
+    }
+    
     const userMessage = input.trim()
     setInput('')
     setMessages((prev) => [...prev, { role: 'user', content: userMessage }])
@@ -73,6 +89,26 @@ const ChatBot = () => {
     }
   }
 
+  const handleOpen = () => {
+    if (!isPremium) {
+      enqueueSnackbar(
+        i18n.language === 'tr'
+          ? '🔒 AI Chatbot premium üyeler için! Premium key girin.'
+          : i18n.language === 'ja'
+          ? '🔒 AIチャットボットはプレミアムメンバー専用です！プレミアムキーを入力してください。'
+          : '🔒 AI Chatbot is for premium members! Enter a premium key.',
+        { variant: 'warning' }
+      )
+      return
+    }
+    setOpen(!open)
+  }
+
+  // Premium değilse ChatBot'u gösterme
+  if (!isPremium) {
+    return null
+  }
+
   return (
     <>
       <Fab
@@ -91,7 +127,7 @@ const ChatBot = () => {
           },
           transition: 'all 0.3s ease',
         }}
-        onClick={() => setOpen(!open)}
+        onClick={handleOpen}
       >
         <motion.div
           animate={{ rotate: open ? 180 : 0 }}

@@ -16,12 +16,15 @@ import {
   alpha,
   LinearProgress,
   Paper,
+  InputBase,
+  IconButton,
 } from '@mui/material'
 import { motion } from 'framer-motion'
 import { useSnackbar } from 'notistack'
 import { useTranslation } from 'react-i18next'
 import Navbar from '../components/common/Navbar'
 import Footer from '../components/common/Footer'
+import TypewriterText from '../components/common/TypewriterText'
 import { useAuthStore } from '../store/useAuthStore'
 import { redeemPremiumKey } from '../services/authService'
 import { createPremiumRequest, getMyPremiumRequests } from '../services/premiumRequestService'
@@ -35,6 +38,9 @@ import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome'
 import NoteAddIcon from '@mui/icons-material/NoteAdd'
 import CalculateIcon from '@mui/icons-material/Calculate'
 import SendIcon from '@mui/icons-material/Send'
+import CloudUploadIcon from '@mui/icons-material/CloudUpload'
+import AddIcon from '@mui/icons-material/Add'
+import SearchIcon from '@mui/icons-material/Search'
 import CheckCircleIcon from '@mui/icons-material/CheckCircle'
 import PendingIcon from '@mui/icons-material/Pending'
 import CancelIcon from '@mui/icons-material/Cancel'
@@ -56,7 +62,8 @@ const Dashboard = () => {
   const { t, i18n } = useTranslation()
   const user = useAuthStore((state) => state.user)
   const loadMe = useAuthStore((state) => state.loadMe)
-  const [activeTab, setActiveTab] = useState(0)
+  const [activeSection, setActiveSection] = useState('home') // 'home', 'templates', 'document', 'translate', 'subo', 'blank', 'premium'
+  const [activeTab, setActiveTab] = useState(0) // 0: Premium Key, 1: Templates, 2: OCR/Translate, 3: Blank Page, 4: Subo
   const [premiumKey, setPremiumKey] = useState('')
   const [requestReason, setRequestReason] = useState('')
   const [myRequests, setMyRequests] = useState([])
@@ -64,6 +71,7 @@ const Dashboard = () => {
   const [selectedTemplate, setSelectedTemplate] = useState(null)
   const [inputData, setInputData] = useState({})
   const [loadingRequest, setLoadingRequest] = useState(false)
+  const [templateCategory, setTemplateCategory] = useState('all') // 'all', 'pdf', 'xlsx', 'blank'
 
   useEffect(() => {
     loadMe()

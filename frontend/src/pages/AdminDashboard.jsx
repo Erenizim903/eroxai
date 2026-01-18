@@ -28,6 +28,12 @@ import SearchIcon from '@mui/icons-material/Search'
 import RequestQuoteIcon from '@mui/icons-material/RequestQuote'
 import CheckCircleIcon from '@mui/icons-material/CheckCircle'
 import CancelIcon from '@mui/icons-material/Cancel'
+import OpenInNewIcon from '@mui/icons-material/OpenInNew'
+import StarIcon from '@mui/icons-material/Star'
+import ChevronLeftIcon from '@mui/icons-material/ChevronLeft'
+import ChevronRightIcon from '@mui/icons-material/ChevronRight'
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
+import ExpandLessIcon from '@mui/icons-material/ExpandLess'
 import Dialog from '@mui/material/Dialog'
 import DialogTitle from '@mui/material/DialogTitle'
 import DialogContent from '@mui/material/DialogContent'
@@ -38,8 +44,14 @@ import InputBase from '@mui/material/InputBase'
 import Paper from '@mui/material/Paper'
 import Collapse from '@mui/material/Collapse'
 import { useSnackbar } from 'notistack'
+import { motion } from 'framer-motion'
+import { alpha } from '@mui/material/styles'
 import Navbar from '../components/common/Navbar'
 import Footer from '../components/common/Footer'
+import AnimatedText from '../components/common/AnimatedText'
+import TypewriterText from '../components/common/TypewriterText'
+import AnimatedCounter from '../components/common/AnimatedCounter'
+import ChatBot from '../components/common/ChatBot'
 import {
   addTemplateField,
   createAdminUser,
@@ -71,6 +83,7 @@ const AdminDashboard = () => {
   const [tab, setTab] = useState('overview')
   const [users, setUsers] = useState([])
   const [logs, setLogs] = useState([])
+  const [activityLogs, setActivityLogs] = useState([])
   const [keys, setKeys] = useState([])
   const [templates, setTemplates] = useState([])
   const [premiumRequests, setPremiumRequests] = useState([])
@@ -149,6 +162,7 @@ const AdminDashboard = () => {
   const [analytics, setAnalytics] = useState(null)
   const [menuSearch, setMenuSearch] = useState('')
   const [expandedCategories, setExpandedCategories] = useState({ dashboard: true, management: true, settings: true })
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
 
   const stats = [
     { label: 'Kullanıcılar', value: users.length, icon: <PeopleIcon color="primary" /> },
@@ -415,183 +429,459 @@ const AdminDashboard = () => {
       <Navbar />
       <Container maxWidth="xl" sx={{ py: { xs: 2, md: 4 } }}>
         <Grid container spacing={{ xs: 2, md: 3 }}>
-          <Grid item xs={12} md={3}>
-            <Card sx={{ position: { xs: 'static', md: 'sticky' }, top: 20 }}>
-              <CardContent>
-                <Stack spacing={2}>
-                  <Stack direction="row" spacing={2} alignItems="center">
-                    <Avatar>AD</Avatar>
-                    <Box>
-                      <Typography fontWeight={700}>Admin Dashboard</Typography>
-                      <Typography variant="caption" color="text.secondary">
-                        Yönetim Paneli
-                      </Typography>
-                    </Box>
-                  </Stack>
-                  <Divider />
-                  <Paper
-                    component="form"
-                    sx={{ p: '2px 4px', display: 'flex', alignItems: 'center', mb: 1 }}
-                    elevation={0}
-                  >
-                    <InputBase
-                      sx={{ ml: 1, flex: 1 }}
-                      placeholder="Menü ara..."
-                      value={menuSearch}
-                      onChange={(e) => setMenuSearch(e.target.value)}
-                      startAdornment={<SearchIcon sx={{ color: 'text.secondary', mr: 1 }} />}
-                    />
-                  </Paper>
-                  <Stack spacing={1}>
-                    {filteredMenuItems.map((category) => (
-                      <Box key={category.id}>
+          <Grid item xs={12} md={sidebarCollapsed ? 1 : 3}>
+            <motion.div
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.3 }}
+            >
+              <Card sx={{ position: { xs: 'static', md: 'sticky' }, top: 20, background: alpha('#667eea', 0.05), border: `1px solid ${alpha('#667eea', 0.2)}` }}>
+                <CardContent>
+                  <Stack spacing={2}>
+                    <Stack direction="row" spacing={2} alignItems="center" justifyContent="space-between">
+                      {!sidebarCollapsed && (
+                        <motion.div
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          transition={{ delay: 0.1 }}
+                        >
+                          <Stack direction="row" spacing={2} alignItems="center">
+                            <Avatar sx={{ background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' }}>AD</Avatar>
+                            <Box>
+                              <Typography fontWeight={700} sx={{ background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+                                {siteSettings.site_name || 'EroxAI'}
+                              </Typography>
+                              <Typography variant="caption" color="text.secondary">
+                                Admin Panel
+                              </Typography>
+                            </Box>
+                          </Stack>
+                        </motion.div>
+                      )}
+                      <motion.div
+                        whileHover={{ scale: 1.1 }}
+                        whileTap={{ scale: 0.95 }}
+                      >
                         <Button
-                          fullWidth
-                          startIcon={category.icon}
-                          onClick={() =>
-                            setExpandedCategories((prev) => ({
-                              ...prev,
-                              [category.id]: !prev[category.id],
-                            }))
-                          }
+                          size="small"
+                          onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
                           sx={{
-                            justifyContent: 'flex-start',
-                            textTransform: 'none',
-                            color: 'text.secondary',
-                            fontWeight: 600,
+                            minWidth: 0,
+                            px: 1,
+                            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                            color: 'white',
+                            '&:hover': {
+                              background: 'linear-gradient(135deg, #764ba2 0%, #667eea 100%)',
+                            },
                           }}
                         >
-                          {category.label}
+                          {sidebarCollapsed ? <ChevronRightIcon /> : <ChevronLeftIcon />}
                         </Button>
-                        <Collapse in={expandedCategories[category.id]}>
-                          <Stack spacing={0.5} sx={{ pl: 2, mt: 0.5 }}>
-                            {category.items.map((item) => (
-                              <Button
-                                key={item.key}
-                                startIcon={item.icon}
-                                variant={tab === item.key ? 'contained' : 'text'}
-                                onClick={() => setTab(item.key)}
-                                sx={{
-                                  justifyContent: 'flex-start',
-                                  textTransform: 'none',
-                                  fontSize: '0.875rem',
-                                }}
-                              >
-                                {item.label}
-                                {item.badge !== null && (
-                                  <Badge
-                                    badgeContent={item.badge}
-                                    color="primary"
-                                    sx={{ ml: 'auto', mr: 1 }}
-                                  />
-                                )}
-                              </Button>
-                            ))}
-                          </Stack>
-                        </Collapse>
-                      </Box>
-                    ))}
+                      </motion.div>
+                    </Stack>
+                    {!sidebarCollapsed && (
+                      <>
+                        <Divider />
+                        <motion.div
+                          initial={{ opacity: 0, y: -10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: 0.2 }}
+                        >
+                          <Paper
+                            component="form"
+                            sx={{ p: '2px 4px', display: 'flex', alignItems: 'center', mb: 1 }}
+                            elevation={0}
+                          >
+                            <InputBase
+                              sx={{ ml: 1, flex: 1 }}
+                              placeholder="Menü ara..."
+                              value={menuSearch}
+                              onChange={(e) => setMenuSearch(e.target.value)}
+                              startAdornment={<SearchIcon sx={{ color: 'text.secondary', mr: 1 }} />}
+                            />
+                          </Paper>
+                        </motion.div>
+                        <Stack spacing={1}>
+                          {filteredMenuItems.map((category, catIdx) => (
+                            <motion.div
+                              key={category.id}
+                              initial={{ opacity: 0, x: -20 }}
+                              animate={{ opacity: 1, x: 0 }}
+                              transition={{ delay: 0.3 + catIdx * 0.1 }}
+                            >
+                              <Box>
+                                <motion.div
+                                  whileHover={{ x: 4 }}
+                                  whileTap={{ scale: 0.98 }}
+                                >
+                                  <Button
+                                    fullWidth
+                                    startIcon={category.icon}
+                                    endIcon={expandedCategories[category.id] ? <ExpandLessIcon /> : <ExpandMoreIcon />}
+                                    onClick={() =>
+                                      setExpandedCategories((prev) => ({
+                                        ...prev,
+                                        [category.id]: !prev[category.id],
+                                      }))
+                                    }
+                                    sx={{
+                                      justifyContent: 'flex-start',
+                                      textTransform: 'none',
+                                      color: 'text.secondary',
+                                      fontWeight: 600,
+                                      borderRadius: 2,
+                                      transition: 'all 0.3s ease',
+                                      '&:hover': {
+                                        background: alpha('#667eea', 0.1),
+                                        color: '#667eea',
+                                      },
+                                    }}
+                                  >
+                                    {category.label}
+                                  </Button>
+                                </motion.div>
+                                <Collapse in={expandedCategories[category.id]} timeout={300}>
+                                  <Stack spacing={0.5} sx={{ pl: 2, mt: 0.5 }}>
+                                    {category.items.map((item, itemIdx) => (
+                                      <motion.div
+                                        key={item.key}
+                                        initial={{ opacity: 0, x: -10 }}
+                                        animate={{ opacity: 1, x: 0 }}
+                                        transition={{ delay: itemIdx * 0.05 }}
+                                      >
+                                        <motion.div
+                                          whileHover={{ x: 4, scale: 1.02 }}
+                                          whileTap={{ scale: 0.98 }}
+                                        >
+                                          <Button
+                                            startIcon={item.icon}
+                                            variant={tab === item.key ? 'contained' : 'text'}
+                                            onClick={() => setTab(item.key)}
+                                            sx={{
+                                              width: '100%',
+                                              justifyContent: 'flex-start',
+                                              textTransform: 'none',
+                                              fontSize: '0.875rem',
+                                              borderRadius: 2,
+                                              transition: 'all 0.3s ease',
+                                              ...(tab === item.key && {
+                                                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                                                color: 'white',
+                                                boxShadow: '0 4px 12px rgba(102, 126, 234, 0.4)',
+                                              }),
+                                              '&:hover': {
+                                                background: tab === item.key ? 'linear-gradient(135deg, #764ba2 0%, #667eea 100%)' : alpha('#667eea', 0.1),
+                                              },
+                                            }}
+                                          >
+                                            {item.label}
+                                            {item.badge !== null && (
+                                              <Badge
+                                                badgeContent={item.badge}
+                                                color="primary"
+                                                sx={{ ml: 'auto', mr: 1 }}
+                                              />
+                                            )}
+                                          </Button>
+                                        </motion.div>
+                                      </motion.div>
+                                    ))}
+                                  </Stack>
+                                </Collapse>
+                              </Box>
+                            </motion.div>
+                          ))}
+                        </Stack>
+                      </>
+                    )}
+                    {sidebarCollapsed && (
+                      <Stack spacing={1}>
+                        {filteredMenuItems.map((category) => (
+                          <motion.div
+                            key={category.id}
+                            whileHover={{ scale: 1.1 }}
+                            whileTap={{ scale: 0.95 }}
+                          >
+                            <Button
+                              size="small"
+                              onClick={() =>
+                                setExpandedCategories((prev) => ({
+                                  ...prev,
+                                  [category.id]: !prev[category.id],
+                                }))
+                              }
+                              sx={{
+                                minWidth: 0,
+                                width: '100%',
+                                aspectRatio: 1,
+                                borderRadius: 2,
+                                background: expandedCategories[category.id] ? alpha('#667eea', 0.2) : 'transparent',
+                                color: 'text.secondary',
+                                '&:hover': {
+                                  background: alpha('#667eea', 0.15),
+                                },
+                              }}
+                            >
+                              {category.icon}
+                            </Button>
+                          </motion.div>
+                        ))}
+                      </Stack>
+                    )}
                   </Stack>
-                </Stack>
-              </CardContent>
-            </Card>
+                </CardContent>
+              </Card>
+            </motion.div>
           </Grid>
 
-          <Grid item xs={12} md={9}>
+          <Grid item xs={12} md={sidebarCollapsed ? 11 : 9}>
             <Stack spacing={3}>
               {tab === 'overview' && (
-                <Stack spacing={3}>
-                  <Typography variant="h3">Genel Bakış</Typography>
-                  <Grid container spacing={3}>
-                    {stats.map((stat) => (
-                      <Grid item xs={12} md={3} key={stat.label}>
-                        <Card
-                          sx={{
-                            transition: 'all 0.3s ease',
-                            '&:hover': { transform: 'translateY(-4px)', boxShadow: 4 },
-                          }}
-                        >
-                          <CardContent>
-                            <Stack spacing={2}>
-                              {stat.icon}
-                              <Typography variant="h4">{stat.value}</Typography>
-                              <Typography color="text.secondary">{stat.label}</Typography>
-                            </Stack>
-                          </CardContent>
-                        </Card>
-                      </Grid>
-                    ))}
-                  </Grid>
+                <Box>
+                  {/* Hoş geldiniz Admin - Büyük Ortada */}
+                  <motion.div
+                    initial={{ opacity: 0, y: -30 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.8 }}
+                  >
+                    <Box sx={{ textAlign: 'center', mb: 6, py: 4 }}>
+                      <TypewriterText
+                        text="Hoş Geldiniz Admin"
+                        variant="h1"
+                        speed={80}
+                        sx={{
+                          fontSize: { xs: '3rem', md: '5rem', lg: '6rem' },
+                          fontWeight: 900,
+                          mb: 2,
+                          background: 'linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%)',
+                          WebkitBackgroundClip: 'text',
+                          WebkitTextFillColor: 'transparent',
+                          backgroundClip: 'text',
+                          lineHeight: 1.1,
+                        }}
+                      />
+                      <AnimatedText
+                        variant="h5"
+                        delay={1.2}
+                        sx={{
+                          color: alpha('#fff', 0.8),
+                          fontWeight: 400,
+                        }}
+                      >
+                        Yönetim Paneline Hoş Geldiniz
+                      </AnimatedText>
+                      <AnimatedText
+                        variant="body2"
+                        delay={1.5}
+                        sx={{
+                          color: alpha('#fff', 0.6),
+                          fontWeight: 300,
+                          mt: 2,
+                        }}
+                      >
+                        Tüm işlemlerinizi buradan yönetebilirsiniz
+                      </AnimatedText>
+                    </Box>
+                  </motion.div>
+
+                  {/* Animasyonlu Sayaçlar */}
                   {analytics && (
-                    <Grid container spacing={3} sx={{ mt: 2 }}>
-                      <Grid item xs={12} md={6}>
-                        <Card>
-                          <CardContent>
-                            <Stack spacing={2}>
-                              <Typography variant="h6">Aktif Kullanıcılar</Typography>
-                              <Typography variant="h3">{analytics.overview?.active_users || 0}</Typography>
-                              <Typography variant="caption" color="text.secondary">
-                                30 gün içinde giriş yapan
-                              </Typography>
-                            </Stack>
-                          </CardContent>
-                        </Card>
+                    <motion.div
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.6, delay: 0.3 }}
+                    >
+                      <Grid container spacing={3} sx={{ mb: 6 }}>
+                        {[
+                          { label: 'Toplam Kullanıcı', value: analytics.overview?.total_users || 0, color: '#667eea', icon: <PeopleIcon /> },
+                          { label: 'Yeni Kullanıcı (7 Gün)', value: analytics.overview?.register_count_7_days || 0, color: '#10B981', icon: <PeopleIcon /> },
+                          { label: 'Aktif Kullanıcılar', value: analytics.overview?.active_users || 0, color: '#F59E0B', icon: <PeopleIcon /> },
+                          { label: 'Premium Kullanıcılar', value: analytics.overview?.premium_users || 0, color: '#EC4899', icon: <StarIcon /> },
+                        ].map((stat, idx) => (
+                          <Grid item xs={12} sm={6} md={3} key={stat.label}>
+                            <motion.div
+                              initial={{ opacity: 0, scale: 0.8 }}
+                              animate={{ opacity: 1, scale: 1 }}
+                              transition={{ duration: 0.5, delay: 0.4 + idx * 0.1 }}
+                              whileHover={{ scale: 1.05, y: -5 }}
+                            >
+                              <Card
+                                sx={{
+                                  p: 3,
+                                  borderRadius: 4,
+                                  background: `linear-gradient(135deg, ${alpha(stat.color, 0.2)} 0%, ${alpha(stat.color, 0.05)} 100%)`,
+                                  border: `2px solid ${alpha(stat.color, 0.3)}`,
+                                  backdropFilter: 'blur(20px)',
+                                  transition: 'all 0.3s ease',
+                                  '&:hover': {
+                                    borderColor: stat.color,
+                                    boxShadow: `0 20px 40px ${alpha(stat.color, 0.4)}`,
+                                  },
+                                }}
+                              >
+                                <Stack spacing={2}>
+                                  <Box
+                                    sx={{
+                                      width: 60,
+                                      height: 60,
+                                      borderRadius: 2,
+                                      background: `linear-gradient(135deg, ${stat.color} 0%, ${alpha(stat.color, 0.7)} 100%)`,
+                                      display: 'flex',
+                                      alignItems: 'center',
+                                      justifyContent: 'center',
+                                      color: 'white',
+                                      boxShadow: `0 10px 25px ${alpha(stat.color, 0.5)}`,
+                                    }}
+                                  >
+                                    {stat.icon}
+                                  </Box>
+                                  <AnimatedCounter
+                                    value={stat.value}
+                                    variant="h3"
+                                    delay={0.5 + idx * 0.1}
+                                    sx={{
+                                      fontWeight: 900,
+                                      background: `linear-gradient(135deg, ${stat.color} 0%, ${alpha(stat.color, 0.8)} 100%)`,
+                                      WebkitBackgroundClip: 'text',
+                                      WebkitTextFillColor: 'transparent',
+                                    }}
+                                  />
+                                  <motion.div
+                                    initial={{ opacity: 0 }}
+                                    animate={{ opacity: 1 }}
+                                    transition={{ delay: 0.7 + idx * 0.1 }}
+                                  >
+                                    <AnimatedText
+                                      variant="body2"
+                                      delay={0.6 + idx * 0.1}
+                                      sx={{
+                                        color: alpha('#fff', 0.7),
+                                        fontWeight: 500,
+                                      }}
+                                    >
+                                      {stat.label}
+                                    </AnimatedText>
+                                  </motion.div>
+                                </Stack>
+                              </Card>
+                            </motion.div>
+                          </Grid>
+                        ))}
                       </Grid>
-                      <Grid item xs={12} md={6}>
-                        <Card>
-                          <CardContent>
-                            <Stack spacing={2}>
-                              <Typography variant="h6">Premium Kullanıcılar</Typography>
-                              <Typography variant="h3">{analytics.overview?.premium_users || 0}</Typography>
-                              <Typography variant="caption" color="text.secondary">
-                                Aktif premium üyeler
-                              </Typography>
-                            </Stack>
-                          </CardContent>
-                        </Card>
-                      </Grid>
-                      <Grid item xs={12} md={6}>
-                        <Card>
-                          <CardContent>
-                            <Stack spacing={2}>
-                              <Typography variant="h6">Son 7 Gün</Typography>
-                              <Typography variant="h3">{analytics.overview?.usage_last_7_days || 0}</Typography>
-                              <Typography variant="caption" color="text.secondary">
-                                Kullanım sayısı
-                              </Typography>
-                            </Stack>
-                          </CardContent>
-                        </Card>
-                      </Grid>
-                      <Grid item xs={12} md={6}>
-                        <Card>
-                          <CardContent>
-                            <Stack spacing={2}>
-                              <Typography variant="h6">Son 30 Gün</Typography>
-                              <Typography variant="h3">{analytics.overview?.usage_last_30_days || 0}</Typography>
-                              <Typography variant="caption" color="text.secondary">
-                                Kullanım sayısı
-                              </Typography>
-                            </Stack>
-                          </CardContent>
-                        </Card>
-                      </Grid>
-                    </Grid>
+                    </motion.div>
                   )}
-                </Stack>
+
+                  {/* Son Yapılan Belgeler */}
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.6, delay: 0.8 }}
+                  >
+                    <Card
+                      sx={{
+                        p: 4,
+                        borderRadius: 4,
+                        background: alpha('#fff', 0.03),
+                        border: `1px solid ${alpha('#667eea', 0.2)}`,
+                        backdropFilter: 'blur(20px)',
+                      }}
+                    >
+                      <TypewriterText
+                        text="Son Yapılan Belgeler"
+                        variant="h5"
+                        speed={60}
+                        sx={{
+                          fontWeight: 700,
+                          mb: 3,
+                          background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                          WebkitBackgroundClip: 'text',
+                          WebkitTextFillColor: 'transparent',
+                        }}
+                      />
+                      <Stack spacing={2}>
+                        {logs.slice(0, 10).map((log, idx) => (
+                          <motion.div
+                            key={log.id}
+                            initial={{ opacity: 0, x: -20 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            transition={{ duration: 0.4, delay: 1 + idx * 0.1 }}
+                          >
+                            <Paper
+                              sx={{
+                                p: 2,
+                                borderRadius: 2,
+                                background: alpha('#fff', 0.05),
+                                border: `1px solid ${alpha('#667eea', 0.2)}`,
+                                '&:hover': {
+                                  background: alpha('#667eea', 0.1),
+                                  borderColor: '#667eea',
+                                },
+                              }}
+                            >
+                              <Stack direction="row" justifyContent="space-between" alignItems="center">
+                                <Box>
+                                  <Typography variant="body1" sx={{ fontWeight: 600, color: 'white', mb: 0.5 }}>
+                                    {log.action || 'İşlem'}
+                                  </Typography>
+                                  <Typography variant="caption" sx={{ color: alpha('#fff', 0.6) }}>
+                                    {log.user?.username || 'Kullanıcı'} • {new Date(log.created_at).toLocaleString('tr-TR')}
+                                  </Typography>
+                                </Box>
+                                <Chip
+                                  label={log.action}
+                                  size="small"
+                                  sx={{
+                                    background: alpha('#667eea', 0.2),
+                                    color: '#667eea',
+                                    fontWeight: 600,
+                                  }}
+                                />
+                              </Stack>
+                            </Paper>
+                          </motion.div>
+                        ))}
+                        {logs.length === 0 && (
+                          <Typography variant="body2" sx={{ color: alpha('#fff', 0.5), textAlign: 'center', py: 4 }}>
+                            Henüz belge yok
+                          </Typography>
+                        )}
+                      </Stack>
+                    </Card>
+                  </motion.div>
+                </Box>
               )}
 
               {tab === 'analytics' && (
                 <Stack spacing={3}>
-                  <Typography variant="h3">Analytics & İstatistikler</Typography>
+                  <TypewriterText
+                    text="Analytics & İstatistikler"
+                    variant="h3"
+                    speed={70}
+                    sx={{
+                      fontWeight: 800,
+                      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                      WebkitBackgroundClip: 'text',
+                      WebkitTextFillColor: 'transparent',
+                    }}
+                  />
                   {analytics ? (
                     <Grid container spacing={3}>
                       <Grid item xs={12}>
                         <Card>
                           <CardContent>
-                            <Typography variant="h6" gutterBottom>
-                              Genel İstatistikler
-                            </Typography>
+                              <AnimatedText
+                                variant="h6"
+                                delay={0.2}
+                                sx={{
+                                  fontWeight: 700,
+                                  mb: 2,
+                                  background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                                  WebkitBackgroundClip: 'text',
+                                  WebkitTextFillColor: 'transparent',
+                                }}
+                              >
+                                Genel İstatistikler
+                              </AnimatedText>
                             <Grid container spacing={3} sx={{ mt: 1 }}>
                               <Grid item xs={12} md={3}>
                                 <Typography variant="caption" color="text.secondary">
@@ -625,9 +915,19 @@ const AdminDashboard = () => {
                         <Grid item xs={12}>
                           <Card>
                             <CardContent>
-                              <Typography variant="h6" gutterBottom>
+                              <AnimatedText
+                                variant="h6"
+                                delay={0.3}
+                                sx={{
+                                  fontWeight: 700,
+                                  mb: 2,
+                                  background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                                  WebkitBackgroundClip: 'text',
+                                  WebkitTextFillColor: 'transparent',
+                                }}
+                              >
                                 En Çok Kullanılan İşlemler (30 gün)
-                              </Typography>
+                              </AnimatedText>
                               <Stack spacing={2} sx={{ mt: 2 }}>
                                 {analytics.action_stats.map((stat, idx) => (
                                   <Stack key={idx} direction="row" justifyContent="space-between" alignItems="center">
@@ -654,10 +954,25 @@ const AdminDashboard = () => {
               {tab === 'users' && (
           <Grid container spacing={3}>
             <Grid item xs={12} md={5}>
-              <Card>
-                <CardContent>
-                  <Stack spacing={2}>
-                    <Typography variant="h6">Yeni Kullanıcı</Typography>
+              <motion.div
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.6 }}
+              >
+                <Card>
+                  <CardContent>
+                    <Stack spacing={2}>
+                      <TypewriterText
+                        text="Yeni Kullanıcı"
+                        variant="h6"
+                        speed={60}
+                        sx={{
+                          fontWeight: 700,
+                          background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                          WebkitBackgroundClip: 'text',
+                          WebkitTextFillColor: 'transparent',
+                        }}
+                      />
                     <TextField
                       label="Kullanıcı adı"
                       value={newUser.username}
@@ -721,7 +1036,18 @@ const AdminDashboard = () => {
             <Grid item xs={12} md={7}>
               <Card>
                 <CardContent>
-                  <Typography variant="h6">Kullanıcılar</Typography>
+                  <AnimatedText
+                    variant="h6"
+                    delay={0.1}
+                    sx={{
+                      fontWeight: 700,
+                      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                      WebkitBackgroundClip: 'text',
+                      WebkitTextFillColor: 'transparent',
+                    }}
+                  >
+                    Kullanıcılar
+                  </AnimatedText>
                   <Divider sx={{ my: 2 }} />
                   <Stack spacing={1}>
                     {users.map((u) => (
@@ -743,7 +1069,17 @@ const AdminDashboard = () => {
                 <Card>
                   <CardContent>
                     <Stack spacing={2}>
-                <Typography variant="h6">Yeni Şablon</Typography>
+                <TypewriterText
+                  text="Yeni Şablon"
+                  variant="h6"
+                  speed={60}
+                  sx={{
+                    fontWeight: 700,
+                    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                    WebkitBackgroundClip: 'text',
+                    WebkitTextFillColor: 'transparent',
+                  }}
+                />
                 <TextField
                   label="Şablon adı"
                   value={newTemplate.name}
@@ -775,7 +1111,18 @@ const AdminDashboard = () => {
                   Şablon Oluştur
                 </Button>
                 <Divider />
-                <Typography variant="h6">Şablon Alanı Ekle</Typography>
+                <TypewriterText
+                  text="Şablon Alanı Ekle"
+                  variant="h6"
+                  speed={60}
+                  sx={{
+                    fontWeight: 700,
+                    mt: 3,
+                    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                    WebkitBackgroundClip: 'text',
+                    WebkitTextFillColor: 'transparent',
+                  }}
+                />
                 <TextField
                   select
                   label="Şablon"
@@ -994,7 +1341,17 @@ const AdminDashboard = () => {
                 <Card>
                   <CardContent>
                     <Stack spacing={2}>
-                <Typography variant="h6">Premium Key</Typography>
+                <TypewriterText
+                  text="Premium Key"
+                  variant="h6"
+                  speed={60}
+                  sx={{
+                    fontWeight: 700,
+                    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                    WebkitBackgroundClip: 'text',
+                    WebkitTextFillColor: 'transparent',
+                  }}
+                />
                 <TextField
                   label="Key (boş bırak otomatik)"
                   value={premiumKey.code}
@@ -1027,7 +1384,19 @@ const AdminDashboard = () => {
                   <CardContent>
                     <Stack spacing={3}>
                       <Box>
-                        <Typography variant="h6" sx={{ mb: 2 }}>Premium Key Başvuruları</Typography>
+                        <AnimatedText
+                          variant="h6"
+                          delay={0.1}
+                          sx={{
+                            mb: 2,
+                            fontWeight: 700,
+                            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                            WebkitBackgroundClip: 'text',
+                            WebkitTextFillColor: 'transparent',
+                          }}
+                        >
+                          Premium Key Başvuruları
+                        </AnimatedText>
                         <Stack direction="row" spacing={1} sx={{ mb: 3 }}>
                           <Chip
                             label="Tümü"
@@ -1167,7 +1536,18 @@ const AdminDashboard = () => {
                   <CardContent>
                     <Stack spacing={3}>
                       <Box>
-                        <Typography variant="h6" sx={{ mb: 2 }}>Kullanım Logları</Typography>
+                        <TypewriterText
+                          text="Kullanım Logları"
+                          variant="h6"
+                          speed={60}
+                          sx={{
+                            mb: 2,
+                            fontWeight: 700,
+                            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                            WebkitBackgroundClip: 'text',
+                            WebkitTextFillColor: 'transparent',
+                          }}
+                        />
                         <Divider sx={{ my: 2 }} />
                         <Stack spacing={1}>
                           {logs.map((log) => (
@@ -1181,7 +1561,18 @@ const AdminDashboard = () => {
                       </Box>
                       <Divider />
                       <Box>
-                        <Typography variant="h6" sx={{ mb: 2 }}>Kullanıcı Aktivite Logları (Giriş/Çıkış/IP)</Typography>
+                        <TypewriterText
+                          text="Kullanıcı Aktivite Logları (Giriş/Çıkış/IP)"
+                          variant="h6"
+                          speed={60}
+                          sx={{
+                            mb: 2,
+                            fontWeight: 700,
+                            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                            WebkitBackgroundClip: 'text',
+                            WebkitTextFillColor: 'transparent',
+                          }}
+                        />
                         <Divider sx={{ my: 2 }} />
                         <Stack spacing={1}>
                           {activityLogs.length === 0 ? (
@@ -1223,233 +1614,664 @@ const AdminDashboard = () => {
               )}
 
               {tab === 'settings' && (
-                <Card>
-                  <CardContent>
-                    <Stack spacing={2}>
-                      <Typography variant="h6">Site Ayarları</Typography>
-                <TextField
-                  label="Site adı"
-                  value={siteSettings.site_name}
-                  onChange={(e) => setSiteSettings({ ...siteSettings, site_name: e.target.value })}
-                />
-                <TextField
-                  label="İletişim mail"
-                  value={siteSettings.contact_email}
-                  onChange={(e) => setSiteSettings({ ...siteSettings, contact_email: e.target.value })}
-                />
-                <TextField
-                  label="Telefon"
-                  value={siteSettings.contact_phone}
-                  onChange={(e) => setSiteSettings({ ...siteSettings, contact_phone: e.target.value })}
-                />
-                <TextField
-                  label="WhatsApp"
-                  value={siteSettings.contact_whatsapp}
-                  onChange={(e) => setSiteSettings({ ...siteSettings, contact_whatsapp: e.target.value })}
-                />
-                <TextField
-                  label="Adres"
-                  value={siteSettings.address}
-                  onChange={(e) => setSiteSettings({ ...siteSettings, address: e.target.value })}
-                />
-                <TextField
-                  label="Hero başlık"
-                  value={siteSettings.hero_title}
-                  onChange={(e) => setSiteSettings({ ...siteSettings, hero_title: e.target.value })}
-                />
-                <TextField
-                  label="Hero alt başlık"
-                  value={siteSettings.hero_subtitle}
-                  onChange={(e) => setSiteSettings({ ...siteSettings, hero_subtitle: e.target.value })}
-                  multiline
-                  rows={2}
-                />
-                <TextField
-                  label="Copyright Metni"
-                  value={siteSettings.copyright_text}
-                  onChange={(e) => setSiteSettings({ ...siteSettings, copyright_text: e.target.value })}
-                  placeholder="© 2026 EroxAI Studio. Tüm hakları saklıdır."
-                  helperText="Footer'da gösterilecek copyright metni"
-                />
-                <Divider sx={{ my: 2 }} />
-                <Typography variant="h6" sx={{ mb: 2 }}>
-                  Sosyal Medya Hesapları
-                </Typography>
-                <TextField
-                  label="Facebook URL"
-                  value={siteSettings.social_facebook}
-                  onChange={(e) => setSiteSettings({ ...siteSettings, social_facebook: e.target.value })}
-                  placeholder="https://facebook.com/..."
-                  fullWidth
-                />
-                <TextField
-                  label="Instagram URL"
-                  value={siteSettings.social_instagram}
-                  onChange={(e) => setSiteSettings({ ...siteSettings, social_instagram: e.target.value })}
-                  placeholder="https://instagram.com/..."
-                  fullWidth
-                />
-                <TextField
-                  label="Twitter/X URL"
-                  value={siteSettings.social_twitter}
-                  onChange={(e) => setSiteSettings({ ...siteSettings, social_twitter: e.target.value })}
-                  placeholder="https://twitter.com/..."
-                  fullWidth
-                />
-                <TextField
-                  label="LinkedIn URL"
-                  value={siteSettings.social_linkedin}
-                  onChange={(e) => setSiteSettings({ ...siteSettings, social_linkedin: e.target.value })}
-                  placeholder="https://linkedin.com/..."
-                  fullWidth
-                />
-                <TextField
-                  label="YouTube URL"
-                  value={siteSettings.social_youtube}
-                  onChange={(e) => setSiteSettings({ ...siteSettings, social_youtube: e.target.value })}
-                  placeholder="https://youtube.com/..."
-                  fullWidth
-                />
-                <TextField
-                  label="GitHub URL"
-                  value={siteSettings.social_github}
-                  onChange={(e) => setSiteSettings({ ...siteSettings, social_github: e.target.value })}
-                  placeholder="https://github.com/..."
-                  fullWidth
-                />
-                <TextField
-                  label="Telegram URL"
-                  value={siteSettings.social_telegram}
-                  onChange={(e) => setSiteSettings({ ...siteSettings, social_telegram: e.target.value })}
-                  placeholder="https://t.me/..."
-                  fullWidth
-                />
-                <Divider sx={{ my: 2 }} />
-                <Typography variant="h6" sx={{ mb: 2 }}>
-                  AI API Endpoints
-                </Typography>
-                <TextField
-                  label="Google AI Endpoint"
-                  value={siteSettings.google_ai_endpoint}
-                  onChange={(e) => setSiteSettings({ ...siteSettings, google_ai_endpoint: e.target.value })}
-                  placeholder="https://vision.googleapis.com/v1/images:annotate"
-                  fullWidth
-                  sx={{ mb: 2 }}
-                />
-                <TextField
-                  label="OpenAI Endpoint"
-                  value={siteSettings.openai_endpoint}
-                  onChange={(e) => setSiteSettings({ ...siteSettings, openai_endpoint: e.target.value })}
-                  placeholder="https://api.openai.com/v1/chat/completions"
-                  fullWidth
-                  sx={{ mb: 2 }}
-                />
-                <TextField
-                  label="DeepSeek Endpoint"
-                  value={siteSettings.deepseek_endpoint}
-                  onChange={(e) => setSiteSettings({ ...siteSettings, deepseek_endpoint: e.target.value })}
-                  placeholder="https://api.deepseek.com/v1/chat/completions"
-                  fullWidth
-                  sx={{ mb: 2 }}
-                />
-                <TextField
-                  label="Blackbox Endpoint"
-                  value={siteSettings.blackbox_endpoint}
-                  onChange={(e) => setSiteSettings({ ...siteSettings, blackbox_endpoint: e.target.value })}
-                  placeholder="https://www.blackbox.ai/api/chat"
-                  fullWidth
-                  sx={{ mb: 2 }}
-                />
-                <TextField
-                  select
-                  label="Chat Provider"
-                  value={siteSettings.chat_provider}
-                  onChange={(e) => setSiteSettings({ ...siteSettings, chat_provider: e.target.value })}
-                  fullWidth
-                  SelectProps={{
-                    native: true,
-                  }}
-                >
-                  <option value="openai">OpenAI</option>
-                  <option value="deepseek">DeepSeek</option>
-                  <option value="blackbox">Blackbox</option>
-                </TextField>
-                <Divider sx={{ my: 2 }} />
-                <Typography variant="h6" sx={{ mb: 2 }}>
-                  Tema Ayarları
-                </Typography>
-                <TextField
-                  label="Primary Color (Hex)"
-                  value={siteSettings.theme_primary_color}
-                  onChange={(e) => setSiteSettings({ ...siteSettings, theme_primary_color: e.target.value })}
-                  placeholder="#667eea"
-                  fullWidth
-                  sx={{ mb: 2 }}
-                  InputProps={{
-                    startAdornment: (
-                      <Box
-                        sx={{
-                          width: 40,
-                          height: 40,
-                          borderRadius: 1,
-                          background: siteSettings.theme_primary_color || '#667eea',
-                          mr: 1,
-                          border: '1px solid rgba(255,255,255,0.2)',
-                        }}
-                      />
-                    ),
-                  }}
-                />
-                <TextField
-                  label="Secondary Color (Hex)"
-                  value={siteSettings.theme_secondary_color}
-                  onChange={(e) => setSiteSettings({ ...siteSettings, theme_secondary_color: e.target.value })}
-                  placeholder="#764ba2"
-                  fullWidth
-                  sx={{ mb: 2 }}
-                  InputProps={{
-                    startAdornment: (
-                      <Box
-                        sx={{
-                          width: 40,
-                          height: 40,
-                          borderRadius: 1,
-                          background: siteSettings.theme_secondary_color || '#764ba2',
-                          mr: 1,
-                          border: '1px solid rgba(255,255,255,0.2)',
-                        }}
-                      />
-                    ),
-                  }}
-                />
-                <TextField
-                  select
-                  label="Theme Preset"
-                  value={siteSettings.theme_preset}
-                  onChange={(e) => setSiteSettings({ ...siteSettings, theme_preset: e.target.value })}
-                  fullWidth
-                  SelectProps={{
-                    native: true,
-                  }}
-                >
-                  <option value="ocean">Ocean</option>
-                  <option value="sunset">Sunset</option>
-                  <option value="violet">Violet</option>
-                  <option value="emerald">Emerald</option>
-                </TextField>
-                <Divider sx={{ my: 2 }} />
                 <Box>
-                  <Typography variant="subtitle2" sx={{ mb: 1 }}>
-                    Logo Yükle
-                  </Typography>
-                  <input type="file" accept="image/*" onChange={(e) => setSiteSettings({ ...siteSettings, logo: e.target.files?.[0] })} />
-                </Box>
-                      <Button variant="contained" onClick={handleSaveSettings}>
-                        Kaydet
+                  {/* Başlık */}
+                  <motion.div
+                    initial={{ opacity: 0, y: -20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.6 }}
+                  >
+                    <Box sx={{ mb: 4, textAlign: 'center' }}>
+                      <TypewriterText
+                        text="Site Ayarları"
+                        variant="h3"
+                        speed={60}
+                        sx={{
+                          fontSize: { xs: '2.5rem', md: '3.5rem' },
+                          fontWeight: 900,
+                          mb: 2,
+                          background: 'linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%)',
+                          WebkitBackgroundClip: 'text',
+                          WebkitTextFillColor: 'transparent',
+                        }}
+                      />
+                      <AnimatedText
+                        variant="body1"
+                        delay={0.5}
+                        sx={{
+                          color: alpha('#fff', 0.7),
+                        }}
+                      >
+                        Site görünümü ve ayarlarını buradan yönetebilirsiniz
+                      </AnimatedText>
+                    </Box>
+                  </motion.div>
+
+                  <Grid container spacing={3}>
+                    {/* Genel Ayarlar */}
+                    <Grid item xs={12} md={6}>
+                      <motion.div
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ duration: 0.6, delay: 0.2 }}
+                      >
+                        <Card
+                          sx={{
+                            p: 3,
+                            borderRadius: 4,
+                            background: `linear-gradient(135deg, ${alpha('#667eea', 0.2)} 0%, ${alpha('#667eea', 0.05)} 100%)`,
+                            border: `2px solid ${alpha('#667eea', 0.3)}`,
+                            backdropFilter: 'blur(20px)',
+                            height: '100%',
+                          }}
+                        >
+                          <CardContent>
+                            <Stack spacing={3}>
+                              <AnimatedText
+                                variant="h5"
+                                delay={0.3}
+                                sx={{
+                                  fontWeight: 700,
+                                  background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                                  WebkitBackgroundClip: 'text',
+                                  WebkitTextFillColor: 'transparent',
+                                }}
+                              >
+                                Genel Ayarlar
+                              </AnimatedText>
+                              <TextField
+                                label="Site adı"
+                                value={siteSettings.site_name}
+                                onChange={(e) => setSiteSettings({ ...siteSettings, site_name: e.target.value })}
+                                fullWidth
+                                sx={{
+                                  '& .MuiOutlinedInput-root': {
+                                    background: alpha('#fff', 0.05),
+                                    color: 'white',
+                                    '& fieldset': {
+                                      borderColor: alpha('#667eea', 0.3),
+                                    },
+                                    '&:hover fieldset': {
+                                      borderColor: '#667eea',
+                                    },
+                                  },
+                                }}
+                              />
+                              <TextField
+                                label="Hero başlık"
+                                value={siteSettings.hero_title}
+                                onChange={(e) => setSiteSettings({ ...siteSettings, hero_title: e.target.value })}
+                                fullWidth
+                                sx={{
+                                  '& .MuiOutlinedInput-root': {
+                                    background: alpha('#fff', 0.05),
+                                    color: 'white',
+                                    '& fieldset': { borderColor: alpha('#667eea', 0.3) },
+                                    '&:hover fieldset': { borderColor: '#667eea' },
+                                  },
+                                }}
+                              />
+                              <TextField
+                                label="Hero alt başlık"
+                                value={siteSettings.hero_subtitle}
+                                onChange={(e) => setSiteSettings({ ...siteSettings, hero_subtitle: e.target.value })}
+                                multiline
+                                rows={2}
+                                fullWidth
+                                sx={{
+                                  '& .MuiOutlinedInput-root': {
+                                    background: alpha('#fff', 0.05),
+                                    color: 'white',
+                                    '& fieldset': { borderColor: alpha('#667eea', 0.3) },
+                                    '&:hover fieldset': { borderColor: '#667eea' },
+                                  },
+                                }}
+                              />
+                              <TextField
+                                label="Copyright Metni"
+                                value={siteSettings.copyright_text}
+                                onChange={(e) => setSiteSettings({ ...siteSettings, copyright_text: e.target.value })}
+                                placeholder="© 2026 EroxAI Studio. Tüm hakları saklıdır."
+                                helperText="Footer'da gösterilecek copyright metni"
+                                fullWidth
+                                sx={{
+                                  '& .MuiOutlinedInput-root': {
+                                    background: alpha('#fff', 0.05),
+                                    color: 'white',
+                                    '& fieldset': { borderColor: alpha('#667eea', 0.3) },
+                                    '&:hover fieldset': { borderColor: '#667eea' },
+                                  },
+                                }}
+                              />
+                            </Stack>
+                          </CardContent>
+                        </Card>
+                      </motion.div>
+                    </Grid>
+
+                    {/* İletişim Bilgileri */}
+                    <Grid item xs={12} md={6}>
+                      <motion.div
+                        initial={{ opacity: 0, x: 20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ duration: 0.6, delay: 0.3 }}
+                      >
+                        <Card
+                          sx={{
+                            p: 3,
+                            borderRadius: 4,
+                            background: `linear-gradient(135deg, ${alpha('#10B981', 0.2)} 0%, ${alpha('#10B981', 0.05)} 100%)`,
+                            border: `2px solid ${alpha('#10B981', 0.3)}`,
+                            backdropFilter: 'blur(20px)',
+                            height: '100%',
+                          }}
+                        >
+                          <CardContent>
+                            <Stack spacing={3}>
+                              <AnimatedText
+                                variant="h5"
+                                delay={0.4}
+                                sx={{
+                                  fontWeight: 700,
+                                  background: 'linear-gradient(135deg, #10B981 0%, #059669 100%)',
+                                  WebkitBackgroundClip: 'text',
+                                  WebkitTextFillColor: 'transparent',
+                                }}
+                              >
+                                İletişim Bilgileri
+                              </AnimatedText>
+                              <TextField
+                                label="İletişim mail"
+                                value={siteSettings.contact_email}
+                                onChange={(e) => setSiteSettings({ ...siteSettings, contact_email: e.target.value })}
+                                fullWidth
+                                sx={{
+                                  '& .MuiOutlinedInput-root': {
+                                    background: alpha('#fff', 0.05),
+                                    color: 'white',
+                                    '& fieldset': { borderColor: alpha('#10B981', 0.3) },
+                                    '&:hover fieldset': { borderColor: '#10B981' },
+                                  },
+                                }}
+                              />
+                              <TextField
+                                label="Telefon"
+                                value={siteSettings.contact_phone}
+                                onChange={(e) => setSiteSettings({ ...siteSettings, contact_phone: e.target.value })}
+                                fullWidth
+                                sx={{
+                                  '& .MuiOutlinedInput-root': {
+                                    background: alpha('#fff', 0.05),
+                                    color: 'white',
+                                    '& fieldset': { borderColor: alpha('#10B981', 0.3) },
+                                    '&:hover fieldset': { borderColor: '#10B981' },
+                                  },
+                                }}
+                              />
+                              <TextField
+                                label="WhatsApp"
+                                value={siteSettings.contact_whatsapp}
+                                onChange={(e) => setSiteSettings({ ...siteSettings, contact_whatsapp: e.target.value })}
+                                fullWidth
+                                sx={{
+                                  '& .MuiOutlinedInput-root': {
+                                    background: alpha('#fff', 0.05),
+                                    color: 'white',
+                                    '& fieldset': { borderColor: alpha('#10B981', 0.3) },
+                                    '&:hover fieldset': { borderColor: '#10B981' },
+                                  },
+                                }}
+                              />
+                              <TextField
+                                label="Adres"
+                                value={siteSettings.address}
+                                onChange={(e) => setSiteSettings({ ...siteSettings, address: e.target.value })}
+                                multiline
+                                rows={2}
+                                fullWidth
+                                sx={{
+                                  '& .MuiOutlinedInput-root': {
+                                    background: alpha('#fff', 0.05),
+                                    color: 'white',
+                                    '& fieldset': { borderColor: alpha('#10B981', 0.3) },
+                                    '&:hover fieldset': { borderColor: '#10B981' },
+                                  },
+                                }}
+                              />
+                            </Stack>
+                          </CardContent>
+                        </Card>
+                      </motion.div>
+                    </Grid>
+
+                    {/* Sosyal Medya Hesapları */}
+                    <Grid item xs={12} md={6}>
+                      <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.6, delay: 0.4 }}
+                      >
+                        <Card
+                          sx={{
+                            p: 3,
+                            borderRadius: 4,
+                            background: `linear-gradient(135deg, ${alpha('#EC4899', 0.2)} 0%, ${alpha('#EC4899', 0.05)} 100%)`,
+                            border: `2px solid ${alpha('#EC4899', 0.3)}`,
+                            backdropFilter: 'blur(20px)',
+                            height: '100%',
+                          }}
+                        >
+                          <CardContent>
+                            <Stack spacing={3}>
+                              <AnimatedText
+                                variant="h5"
+                                delay={0.5}
+                                sx={{
+                                  fontWeight: 700,
+                                  background: 'linear-gradient(135deg, #EC4899 0%, #BE185D 100%)',
+                                  WebkitBackgroundClip: 'text',
+                                  WebkitTextFillColor: 'transparent',
+                                }}
+                              >
+                                Sosyal Medya Hesapları
+                              </AnimatedText>
+                              <TextField
+                                label="Facebook URL"
+                                value={siteSettings.social_facebook}
+                                onChange={(e) => setSiteSettings({ ...siteSettings, social_facebook: e.target.value })}
+                                placeholder="https://facebook.com/..."
+                                fullWidth
+                                sx={{
+                                  '& .MuiOutlinedInput-root': {
+                                    background: alpha('#fff', 0.05),
+                                    color: 'white',
+                                    '& fieldset': { borderColor: alpha('#EC4899', 0.3) },
+                                    '&:hover fieldset': { borderColor: '#EC4899' },
+                                  },
+                                }}
+                              />
+                              <TextField
+                                label="Instagram URL"
+                                value={siteSettings.social_instagram}
+                                onChange={(e) => setSiteSettings({ ...siteSettings, social_instagram: e.target.value })}
+                                placeholder="https://instagram.com/..."
+                                fullWidth
+                                sx={{
+                                  '& .MuiOutlinedInput-root': {
+                                    background: alpha('#fff', 0.05),
+                                    color: 'white',
+                                    '& fieldset': { borderColor: alpha('#EC4899', 0.3) },
+                                    '&:hover fieldset': { borderColor: '#EC4899' },
+                                  },
+                                }}
+                              />
+                              <TextField
+                                label="Twitter/X URL"
+                                value={siteSettings.social_twitter}
+                                onChange={(e) => setSiteSettings({ ...siteSettings, social_twitter: e.target.value })}
+                                placeholder="https://twitter.com/..."
+                                fullWidth
+                                sx={{
+                                  '& .MuiOutlinedInput-root': {
+                                    background: alpha('#fff', 0.05),
+                                    color: 'white',
+                                    '& fieldset': { borderColor: alpha('#EC4899', 0.3) },
+                                    '&:hover fieldset': { borderColor: '#EC4899' },
+                                  },
+                                }}
+                              />
+                              <TextField
+                                label="LinkedIn URL"
+                                value={siteSettings.social_linkedin}
+                                onChange={(e) => setSiteSettings({ ...siteSettings, social_linkedin: e.target.value })}
+                                placeholder="https://linkedin.com/..."
+                                fullWidth
+                                sx={{
+                                  '& .MuiOutlinedInput-root': {
+                                    background: alpha('#fff', 0.05),
+                                    color: 'white',
+                                    '& fieldset': { borderColor: alpha('#EC4899', 0.3) },
+                                    '&:hover fieldset': { borderColor: '#EC4899' },
+                                  },
+                                }}
+                              />
+                              <TextField
+                                label="YouTube URL"
+                                value={siteSettings.social_youtube}
+                                onChange={(e) => setSiteSettings({ ...siteSettings, social_youtube: e.target.value })}
+                                placeholder="https://youtube.com/..."
+                                fullWidth
+                                sx={{
+                                  '& .MuiOutlinedInput-root': {
+                                    background: alpha('#fff', 0.05),
+                                    color: 'white',
+                                    '& fieldset': { borderColor: alpha('#EC4899', 0.3) },
+                                    '&:hover fieldset': { borderColor: '#EC4899' },
+                                  },
+                                }}
+                              />
+                              <TextField
+                                label="GitHub URL"
+                                value={siteSettings.social_github}
+                                onChange={(e) => setSiteSettings({ ...siteSettings, social_github: e.target.value })}
+                                placeholder="https://github.com/..."
+                                fullWidth
+                                sx={{
+                                  '& .MuiOutlinedInput-root': {
+                                    background: alpha('#fff', 0.05),
+                                    color: 'white',
+                                    '& fieldset': { borderColor: alpha('#EC4899', 0.3) },
+                                    '&:hover fieldset': { borderColor: '#EC4899' },
+                                  },
+                                }}
+                              />
+                              <TextField
+                                label="Telegram URL"
+                                value={siteSettings.social_telegram}
+                                onChange={(e) => setSiteSettings({ ...siteSettings, social_telegram: e.target.value })}
+                                placeholder="https://t.me/..."
+                                fullWidth
+                                sx={{
+                                  '& .MuiOutlinedInput-root': {
+                                    background: alpha('#fff', 0.05),
+                                    color: 'white',
+                                    '& fieldset': { borderColor: alpha('#EC4899', 0.3) },
+                                    '&:hover fieldset': { borderColor: '#EC4899' },
+                                  },
+                                }}
+                              />
+                            </Stack>
+                          </CardContent>
+                        </Card>
+                      </motion.div>
+                    </Grid>
+
+                    {/* AI API Endpoints */}
+                    <Grid item xs={12} md={6}>
+                      <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.6, delay: 0.5 }}
+                      >
+                        <Card
+                          sx={{
+                            p: 3,
+                            borderRadius: 4,
+                            background: `linear-gradient(135deg, ${alpha('#F59E0B', 0.2)} 0%, ${alpha('#F59E0B', 0.05)} 100%)`,
+                            border: `2px solid ${alpha('#F59E0B', 0.3)}`,
+                            backdropFilter: 'blur(20px)',
+                            height: '100%',
+                          }}
+                        >
+                          <CardContent>
+                            <Stack spacing={3}>
+                              <AnimatedText
+                                variant="h5"
+                                delay={0.6}
+                                sx={{
+                                  fontWeight: 700,
+                                  background: 'linear-gradient(135deg, #F59E0B 0%, #D97706 100%)',
+                                  WebkitBackgroundClip: 'text',
+                                  WebkitTextFillColor: 'transparent',
+                                }}
+                              >
+                                AI API Endpoints
+                              </AnimatedText>
+                              <TextField
+                                label="Google AI Endpoint"
+                                value={siteSettings.google_ai_endpoint}
+                                onChange={(e) => setSiteSettings({ ...siteSettings, google_ai_endpoint: e.target.value })}
+                                placeholder="https://vision.googleapis.com/v1/images:annotate"
+                                fullWidth
+                                sx={{
+                                  '& .MuiOutlinedInput-root': {
+                                    background: alpha('#fff', 0.05),
+                                    color: 'white',
+                                    '& fieldset': { borderColor: alpha('#F59E0B', 0.3) },
+                                    '&:hover fieldset': { borderColor: '#F59E0B' },
+                                  },
+                                }}
+                              />
+                              <TextField
+                                label="OpenAI Endpoint"
+                                value={siteSettings.openai_endpoint}
+                                onChange={(e) => setSiteSettings({ ...siteSettings, openai_endpoint: e.target.value })}
+                                placeholder="https://api.openai.com/v1/chat/completions"
+                                fullWidth
+                                sx={{
+                                  '& .MuiOutlinedInput-root': {
+                                    background: alpha('#fff', 0.05),
+                                    color: 'white',
+                                    '& fieldset': { borderColor: alpha('#F59E0B', 0.3) },
+                                    '&:hover fieldset': { borderColor: '#F59E0B' },
+                                  },
+                                }}
+                              />
+                              <TextField
+                                label="DeepSeek Endpoint"
+                                value={siteSettings.deepseek_endpoint}
+                                onChange={(e) => setSiteSettings({ ...siteSettings, deepseek_endpoint: e.target.value })}
+                                placeholder="https://api.deepseek.com/v1/chat/completions"
+                                fullWidth
+                                sx={{
+                                  '& .MuiOutlinedInput-root': {
+                                    background: alpha('#fff', 0.05),
+                                    color: 'white',
+                                    '& fieldset': { borderColor: alpha('#F59E0B', 0.3) },
+                                    '&:hover fieldset': { borderColor: '#F59E0B' },
+                                  },
+                                }}
+                              />
+                              <TextField
+                                label="Blackbox Endpoint"
+                                value={siteSettings.blackbox_endpoint}
+                                onChange={(e) => setSiteSettings({ ...siteSettings, blackbox_endpoint: e.target.value })}
+                                placeholder="https://www.blackbox.ai/api/chat"
+                                fullWidth
+                                sx={{
+                                  '& .MuiOutlinedInput-root': {
+                                    background: alpha('#fff', 0.05),
+                                    color: 'white',
+                                    '& fieldset': { borderColor: alpha('#F59E0B', 0.3) },
+                                    '&:hover fieldset': { borderColor: '#F59E0B' },
+                                  },
+                                }}
+                              />
+                              <TextField
+                                select
+                                label="Chat Provider"
+                                value={siteSettings.chat_provider}
+                                onChange={(e) => setSiteSettings({ ...siteSettings, chat_provider: e.target.value })}
+                                fullWidth
+                                SelectProps={{ native: true }}
+                                sx={{
+                                  '& .MuiOutlinedInput-root': {
+                                    background: alpha('#fff', 0.05),
+                                    color: 'white',
+                                    '& fieldset': { borderColor: alpha('#F59E0B', 0.3) },
+                                    '&:hover fieldset': { borderColor: '#F59E0B' },
+                                  },
+                                }}
+                              >
+                                <option value="openai">OpenAI</option>
+                                <option value="deepseek">DeepSeek</option>
+                                <option value="blackbox">Blackbox</option>
+                              </TextField>
+                            </Stack>
+                          </CardContent>
+                        </Card>
+                      </motion.div>
+                    </Grid>
+
+                    {/* Tema Ayarları */}
+                    <Grid item xs={12} md={6}>
+                      <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.6, delay: 0.6 }}
+                      >
+                        <Card
+                          sx={{
+                            p: 3,
+                            borderRadius: 4,
+                            background: `linear-gradient(135deg, ${alpha('#667eea', 0.2)} 0%, ${alpha('#764ba2', 0.05)} 100%)`,
+                            border: `2px solid ${alpha('#667eea', 0.3)}`,
+                            backdropFilter: 'blur(20px)',
+                            height: '100%',
+                          }}
+                        >
+                          <CardContent>
+                            <Stack spacing={3}>
+                              <AnimatedText
+                                variant="h5"
+                                delay={0.7}
+                                sx={{
+                                  fontWeight: 700,
+                                  background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                                  WebkitBackgroundClip: 'text',
+                                  WebkitTextFillColor: 'transparent',
+                                }}
+                              >
+                                Tema Ayarları
+                              </AnimatedText>
+                              <TextField
+                                label="Primary Color (Hex)"
+                                value={siteSettings.theme_primary_color}
+                                onChange={(e) => setSiteSettings({ ...siteSettings, theme_primary_color: e.target.value })}
+                                placeholder="#667eea"
+                                fullWidth
+                                InputProps={{
+                                  startAdornment: (
+                                    <Box
+                                      sx={{
+                                        width: 40,
+                                        height: 40,
+                                        borderRadius: 1,
+                                        background: siteSettings.theme_primary_color || '#667eea',
+                                        mr: 1,
+                                        border: '1px solid rgba(255,255,255,0.2)',
+                                      }}
+                                    />
+                                  ),
+                                }}
+                                sx={{
+                                  '& .MuiOutlinedInput-root': {
+                                    background: alpha('#fff', 0.05),
+                                    color: 'white',
+                                    '& fieldset': { borderColor: alpha('#667eea', 0.3) },
+                                    '&:hover fieldset': { borderColor: '#667eea' },
+                                  },
+                                }}
+                              />
+                              <TextField
+                                label="Secondary Color (Hex)"
+                                value={siteSettings.theme_secondary_color}
+                                onChange={(e) => setSiteSettings({ ...siteSettings, theme_secondary_color: e.target.value })}
+                                placeholder="#764ba2"
+                                fullWidth
+                                InputProps={{
+                                  startAdornment: (
+                                    <Box
+                                      sx={{
+                                        width: 40,
+                                        height: 40,
+                                        borderRadius: 1,
+                                        background: siteSettings.theme_secondary_color || '#764ba2',
+                                        mr: 1,
+                                        border: '1px solid rgba(255,255,255,0.2)',
+                                      }}
+                                    />
+                                  ),
+                                }}
+                                sx={{
+                                  '& .MuiOutlinedInput-root': {
+                                    background: alpha('#fff', 0.05),
+                                    color: 'white',
+                                    '& fieldset': { borderColor: alpha('#764ba2', 0.3) },
+                                    '&:hover fieldset': { borderColor: '#764ba2' },
+                                  },
+                                }}
+                              />
+                              <TextField
+                                select
+                                label="Theme Preset"
+                                value={siteSettings.theme_preset}
+                                onChange={(e) => setSiteSettings({ ...siteSettings, theme_preset: e.target.value })}
+                                fullWidth
+                                SelectProps={{ native: true }}
+                                sx={{
+                                  '& .MuiOutlinedInput-root': {
+                                    background: alpha('#fff', 0.05),
+                                    color: 'white',
+                                    '& fieldset': { borderColor: alpha('#667eea', 0.3) },
+                                    '&:hover fieldset': { borderColor: '#667eea' },
+                                  },
+                                }}
+                              >
+                                <option value="ocean">Ocean</option>
+                                <option value="sunset">Sunset</option>
+                                <option value="violet">Violet</option>
+                                <option value="emerald">Emerald</option>
+                              </TextField>
+                              <Box sx={{ pt: 2 }}>
+                                <Typography variant="subtitle2" sx={{ mb: 1, color: alpha('#fff', 0.8), fontWeight: 600 }}>
+                                  Logo Yükle
+                                </Typography>
+                                <input
+                                  type="file"
+                                  accept="image/*"
+                                  onChange={(e) => setSiteSettings({ ...siteSettings, logo: e.target.files?.[0] })}
+                                  style={{
+                                    width: '100%',
+                                    padding: '12px',
+                                    borderRadius: '8px',
+                                    background: alpha('#fff', 0.05),
+                                    border: `1px solid ${alpha('#667eea', 0.3)}`,
+                                    color: 'white',
+                                    cursor: 'pointer',
+                                  }}
+                                />
+                              </Box>
+                            </Stack>
+                          </CardContent>
+                        </Card>
+                      </motion.div>
+                    </Grid>
+                  </Grid>
+
+                  {/* Kaydet Butonu */}
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.6, delay: 0.8 }}
+                  >
+                    <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4, mb: 2 }}>
+                      <Button
+                        variant="contained"
+                        onClick={handleSaveSettings}
+                        size="large"
+                        sx={{
+                          px: 6,
+                          py: 1.5,
+                          borderRadius: 3,
+                          fontSize: '1.1rem',
+                          fontWeight: 700,
+                          background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                          color: 'white',
+                          boxShadow: `0 10px 30px ${alpha('#667eea', 0.4)}`,
+                          '&:hover': {
+                            background: 'linear-gradient(135deg, #764ba2 0%, #667eea 100%)',
+                            boxShadow: `0 15px 40px ${alpha('#667eea', 0.6)}`,
+                            transform: 'translateY(-2px)',
+                          },
+                          transition: 'all 0.3s ease',
+                        }}
+                      >
+                        ✨ Ayarları Kaydet
                       </Button>
-                    </Stack>
-                  </CardContent>
-                </Card>
+                    </Box>
+                  </motion.div>
+                </Box>
               )}
             </Stack>
           </Grid>
@@ -1516,6 +2338,7 @@ const AdminDashboard = () => {
         </DialogActions>
       </Dialog>
 
+      <ChatBot />
       <Footer />
     </Box>
   )

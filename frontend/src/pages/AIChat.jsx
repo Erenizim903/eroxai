@@ -1,8 +1,6 @@
 import { useState, useRef, useEffect } from 'react'
 import {
   Box,
-  Card,
-  CardContent,
   Container,
   IconButton,
   TextField,
@@ -16,29 +14,24 @@ import {
   FormControl,
   InputLabel,
   CircularProgress,
+  Avatar,
+  Tooltip,
 } from '@mui/material'
 import { motion, AnimatePresence } from 'framer-motion'
 import SendIcon from '@mui/icons-material/Send'
 import SmartToyIcon from '@mui/icons-material/SmartToy'
+import PersonIcon from '@mui/icons-material/Person'
+import StopIcon from '@mui/icons-material/Stop'
+import RefreshIcon from '@mui/icons-material/Refresh'
+import MoreVertIcon from '@mui/icons-material/MoreVert'
 import { useTranslation } from 'react-i18next'
 import { sendChatMessage } from '../services/chatService'
 import { useSnackbar } from 'notistack'
 import Navbar from '../components/common/Navbar'
 import Footer from '../components/common/Footer'
-import AnimatedText from '../components/common/AnimatedText'
 import TypewriterText from '../components/common/TypewriterText'
 import { useAuthStore } from '../store/useAuthStore'
 import { useSiteStore } from '../store/useSiteStore'
-
-const FloatingCard = ({ children, delay = 0 }) => (
-  <motion.div
-    initial={{ opacity: 0, y: 20 }}
-    animate={{ opacity: 1, y: 0 }}
-    transition={{ duration: 0.5, delay }}
-  >
-    {children}
-  </motion.div>
-)
 
 const AIChat = () => {
   const { t, i18n } = useTranslation()
@@ -59,6 +52,7 @@ const AIChat = () => {
   const [loading, setLoading] = useState(false)
   const [provider, setProvider] = useState(siteSettings?.chat_provider || 'openai')
   const messagesEndRef = useRef(null)
+  const inputRef = useRef(null)
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -73,6 +67,11 @@ const AIChat = () => {
       setProvider(siteSettings.chat_provider)
     }
   }, [siteSettings])
+
+  useEffect(() => {
+    // Focus input on mount
+    inputRef.current?.focus()
+  }, [])
 
   const handleSend = async () => {
     if (!input.trim() || loading) return
@@ -104,259 +103,427 @@ const AIChat = () => {
       ])
     } finally {
       setLoading(false)
+      setTimeout(() => inputRef.current?.focus(), 100)
     }
   }
 
+  const handleClear = () => {
+    setMessages([
+      {
+        role: 'assistant',
+        content: i18n.language === 'tr'
+          ? 'Merhaba! Ben EroxAI Studio AI asistanınız. Size nasıl yardımcı olabilirim?'
+          : i18n.language === 'ja'
+          ? 'こんにちは！私はEroxAI StudioのAIアシスタントです。どのようにお手伝いできますか？'
+          : 'Hello! I am your EroxAI Studio AI assistant. How can I help you?',
+      },
+    ])
+  }
+
   const providerOptions = [
-    { value: 'openai', label: 'OpenAI' },
-    { value: 'deepseek', label: 'DeepSeek' },
-    { value: 'blackbox', label: 'Blackbox' },
+    { value: 'openai', label: 'OpenAI', icon: '🤖' },
+    { value: 'deepseek', label: 'DeepSeek', icon: '🧠' },
+    { value: 'blackbox', label: 'Blackbox', icon: '⚡' },
   ]
 
+  const isPremium = user?.profile?.is_premium || false
+
+  if (!isPremium) {
+    return (
+      <Box sx={{ minHeight: '100vh', background: 'linear-gradient(180deg, #0a0a0a 0%, #1a1a2e 100%)' }}>
+        <Navbar />
+        <Container maxWidth="md" sx={{ py: { xs: 8, md: 12 }, textAlign: 'center' }}>
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+          >
+            <SmartToyIcon sx={{ fontSize: 80, color: '#667eea', mb: 3 }} />
+            <TypewriterText
+              text={i18n.language === 'tr' ? 'Premium Üyelik Gerekli' : i18n.language === 'ja' ? 'プレミアムメンバーシップが必要' : 'Premium Membership Required'}
+              variant="h3"
+              speed={60}
+              sx={{
+                fontWeight: 800,
+                mb: 2,
+                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+              }}
+            />
+            <Typography variant="h6" sx={{ color: alpha('#fff', 0.7), mb: 4, maxWidth: 600, mx: 'auto' }}>
+              {i18n.language === 'tr'
+                ? 'AI Chat özelliğini kullanmak için premium key girmeniz gerekmektedir.'
+                : i18n.language === 'ja'
+                ? 'AIチャット機能を使用するには、プレミアムキーを入力する必要があります。'
+                : 'You need to enter a premium key to use the AI Chat feature.'}
+            </Typography>
+          </motion.div>
+        </Container>
+        <Footer />
+      </Box>
+    )
+  }
+
   return (
-    <Box sx={{ minHeight: '100vh', background: 'linear-gradient(180deg, #0a0a0a 0%, #1a1a2e 100%)' }}>
+    <Box sx={{ minHeight: '100vh', background: '#0f0f0f', display: 'flex', flexDirection: 'column' }}>
       <Navbar />
-      <Container maxWidth="lg" sx={{ py: { xs: 4, md: 6 } }}>
-        <FloatingCard delay={0}>
-          <Box sx={{ mb: 4 }}>
-            <Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 3 }}>
-              <SmartToyIcon sx={{ fontSize: 48, color: '#667eea' }} />
-              <Box>
-                <AnimatedText
-                  variant="h3"
-                  component="h1"
+      <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', maxWidth: '100%', mx: 'auto', width: '100%' }}>
+        {/* Header */}
+        <Box
+          sx={{
+            borderBottom: `1px solid ${alpha('#fff', 0.1)}`,
+            background: alpha('#1a1a1a', 0.8),
+            backdropFilter: 'blur(20px)',
+            position: 'sticky',
+            top: 0,
+            zIndex: 10,
+            py: 2,
+            px: { xs: 2, md: 4 },
+          }}
+        >
+          <Container maxWidth="md">
+            <Stack direction="row" spacing={2} alignItems="center" justifyContent="space-between">
+              <Stack direction="row" spacing={2} alignItems="center">
+                <Avatar
                   sx={{
-                    fontWeight: 800,
-                    mb: 1,
+                    width: 40,
+                    height: 40,
                     background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                    WebkitBackgroundClip: 'text',
-                    WebkitTextFillColor: 'transparent',
                   }}
                 >
-                  {i18n.language === 'tr' ? 'EroxAI Studio AI Sohbet' : i18n.language === 'ja' ? 'EroxAI Studio AIチャット' : 'EroxAI Studio AI Chat'}
-                </AnimatedText>
-                <AnimatedText
-                  variant="body1"
-                  sx={{ color: alpha('#fff', 0.7), delay: 0.2 }}
-                >
-                  {i18n.language === 'tr'
-                    ? 'EroxAI Studio yapay zeka asistanı ile sohbet edin'
-                    : i18n.language === 'ja'
-                    ? 'EroxAI StudioのAIアシスタントとチャットする'
-                    : 'Chat with EroxAI Studio AI assistant'}
-                </AnimatedText>
-              </Box>
-            </Stack>
-            <FormControl sx={{ minWidth: 200, mb: 2 }}>
-              <InputLabel sx={{ color: alpha('#fff', 0.7) }}>
-                {i18n.language === 'tr' ? 'AI Provider' : i18n.language === 'ja' ? 'AIプロバイダー' : 'AI Provider'}
-              </InputLabel>
-              <Select
-                value={provider}
-                onChange={(e) => setProvider(e.target.value)}
-                label={i18n.language === 'tr' ? 'AI Provider' : i18n.language === 'ja' ? 'AIプロバイダー' : 'AI Provider'}
-                sx={{
-                  color: 'white',
-                  '& .MuiOutlinedInput-notchedOutline': {
-                    borderColor: alpha('#667eea', 0.3),
-                  },
-                  '&:hover .MuiOutlinedInput-notchedOutline': {
-                    borderColor: alpha('#667eea', 0.5),
-                  },
-                  '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                    borderColor: '#667eea',
-                  },
-                }}
-              >
-                {providerOptions.map((opt) => (
-                  <MenuItem key={opt.value} value={opt.value}>
-                    {opt.label}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-          </Box>
-        </FloatingCard>
-
-        <FloatingCard delay={0.1}>
-          <Card
-            sx={{
-              borderRadius: 4,
-              background: alpha('#fff', 0.03),
-              border: `1px solid ${alpha('#667eea', 0.2)}`,
-              backdropFilter: 'blur(20px)',
-              height: 'calc(100vh - 300px)',
-              display: 'flex',
-              flexDirection: 'column',
-            }}
-          >
-            <CardContent sx={{ p: 0, height: '100%', display: 'flex', flexDirection: 'column' }}>
-              <Box
-                sx={{
-                  p: 3,
-                  borderBottom: `1px solid ${alpha('#667eea', 0.2)}`,
-                  background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                  borderRadius: '16px 16px 0 0',
-                }}
-              >
-                <Stack direction="row" spacing={2} alignItems="center" justifyContent="space-between">
-                  <Stack direction="row" spacing={2} alignItems="center">
-                    <SmartToyIcon sx={{ color: 'white' }} />
-                    <Typography variant="h6" sx={{ color: 'white', fontWeight: 700 }}>
-                      {i18n.language === 'tr' ? 'EroxAI Studio AI Asistan' : i18n.language === 'ja' ? 'EroxAI Studio AIアシスタント' : 'EroxAI Studio AI Assistant'}
-                    </Typography>
-                  </Stack>
-                  <Chip
-                    label={providerOptions.find((p) => p.value === provider)?.label || 'OpenAI'}
+                  <SmartToyIcon />
+                </Avatar>
+                <Box>
+                  <Typography variant="h6" sx={{ fontWeight: 700, color: 'white', fontSize: { xs: '1rem', md: '1.25rem' } }}>
+                    {i18n.language === 'tr' ? 'EroxAI Studio AI' : i18n.language === 'ja' ? 'EroxAI Studio AI' : 'EroxAI Studio AI'}
+                  </Typography>
+                  <Typography variant="caption" sx={{ color: alpha('#fff', 0.6), fontSize: { xs: '0.7rem', md: '0.75rem' } }}>
+                    {providerOptions.find((p) => p.value === provider)?.label || 'OpenAI'}
+                  </Typography>
+                </Box>
+              </Stack>
+              <Stack direction="row" spacing={1}>
+                <FormControl size="small" sx={{ minWidth: 120 }}>
+                  <Select
+                    value={provider}
+                    onChange={(e) => setProvider(e.target.value)}
                     sx={{
-                      background: alpha('#fff', 0.2),
                       color: 'white',
-                      fontWeight: 600,
+                      fontSize: { xs: '0.75rem', md: '0.875rem' },
+                      '& .MuiOutlinedInput-notchedOutline': {
+                        borderColor: alpha('#667eea', 0.3),
+                      },
+                      '&:hover .MuiOutlinedInput-notchedOutline': {
+                        borderColor: alpha('#667eea', 0.5),
+                      },
+                      '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                        borderColor: '#667eea',
+                      },
+                      '& .MuiSelect-icon': {
+                        color: 'white',
+                      },
                     }}
-                  />
-                </Stack>
-              </Box>
+                  >
+                    {providerOptions.map((opt) => (
+                      <MenuItem key={opt.value} value={opt.value}>
+                        <Stack direction="row" spacing={1} alignItems="center">
+                          <span>{opt.icon}</span>
+                          <span>{opt.label}</span>
+                        </Stack>
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+                <Tooltip title={i18n.language === 'tr' ? 'Yeni Konuşma' : i18n.language === 'ja' ? '新しい会話' : 'New Chat'}>
+                  <IconButton
+                    onClick={handleClear}
+                    sx={{
+                      color: alpha('#fff', 0.7),
+                      '&:hover': { color: '#fff', background: alpha('#667eea', 0.1) },
+                    }}
+                  >
+                    <RefreshIcon />
+                  </IconButton>
+                </Tooltip>
+              </Stack>
+            </Stack>
+          </Container>
+        </Box>
 
-              <Box
-                sx={{
-                  flex: 1,
-                  overflowY: 'auto',
-                  p: 3,
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: 2,
-                }}
-              >
-                <AnimatePresence>
-                  {messages.map((msg, idx) => (
-                    <motion.div
-                      key={idx}
-                      initial={{ opacity: 0, y: 10, scale: 0.95 }}
-                      animate={{ opacity: 1, y: 0, scale: 1 }}
-                      exit={{ opacity: 0, scale: 0.95 }}
-                      transition={{ duration: 0.3, delay: idx * 0.05 }}
+        {/* Messages Area - ChatGPT Style */}
+        <Box
+          sx={{
+            flex: 1,
+            overflowY: 'auto',
+            overflowX: 'hidden',
+            px: { xs: 2, md: 0 },
+            py: { xs: 3, md: 4 },
+            background: '#0f0f0f',
+          }}
+        >
+          <Container maxWidth="md">
+            <Stack spacing={4}>
+              <AnimatePresence mode="popLayout">
+                {messages.map((msg, idx) => (
+                  <motion.div
+                    key={idx}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.3 }}
+                    layout
+                  >
+                    <Stack
+                      direction="row"
+                      spacing={3}
+                      sx={{
+                        alignItems: 'flex-start',
+                        '&:hover .message-actions': {
+                          opacity: 1,
+                        },
+                      }}
                     >
-                      <Paper
+                      {/* Avatar */}
+                      <Avatar
                         sx={{
-                          p: 2.5,
-                          maxWidth: '80%',
-                          alignSelf: msg.role === 'user' ? 'flex-end' : 'flex-start',
+                          width: { xs: 32, md: 40 },
+                          height: { xs: 32, md: 40 },
                           background:
                             msg.role === 'user'
                               ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
-                              : alpha('#fff', 0.1),
-                          color: 'white',
-                          borderRadius: 3,
-                          border:
-                            msg.role === 'assistant'
-                              ? `1px solid ${alpha('#667eea', 0.3)}`
-                              : 'none',
+                              : 'linear-gradient(135deg, #10B981 0%, #059669 100%)',
+                          flexShrink: 0,
                         }}
                       >
-                        <Typography variant="body1" sx={{ lineHeight: 1.7 }}>
-                          {msg.content}
-                        </Typography>
-                      </Paper>
-                    </motion.div>
-                  ))}
-                </AnimatePresence>
-                {loading && (
-                  <motion.div
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                  >
-                    <Paper
+                        {msg.role === 'user' ? <PersonIcon /> : <SmartToyIcon />}
+                      </Avatar>
+
+                      {/* Message Content */}
+                      <Box sx={{ flex: 1, minWidth: 0 }}>
+                        <Stack
+                          direction="row"
+                          spacing={1}
+                          alignItems="center"
+                          sx={{ mb: 0.5, position: 'relative' }}
+                        >
+                          <Typography
+                            variant="caption"
+                            sx={{
+                              fontWeight: 600,
+                              color: msg.role === 'user' ? '#667eea' : '#10B981',
+                              fontSize: { xs: '0.7rem', md: '0.75rem' },
+                            }}
+                          >
+                            {msg.role === 'user' ? (user?.username || 'You') : 'EroxAI'}
+                          </Typography>
+                          <Box
+                            className="message-actions"
+                            sx={{
+                              opacity: { xs: 1, md: 0 },
+                              transition: 'opacity 0.2s',
+                              ml: 'auto',
+                            }}
+                          >
+                            <IconButton size="small" sx={{ color: alpha('#fff', 0.5), p: 0.5 }}>
+                              <MoreVertIcon sx={{ fontSize: 16 }} />
+                            </IconButton>
+                          </Box>
+                        </Stack>
+                        <Paper
+                          elevation={0}
+                          sx={{
+                            p: { xs: 2, md: 2.5 },
+                            background: msg.role === 'user' ? alpha('#667eea', 0.1) : alpha('#fff', 0.03),
+                            border: `1px solid ${alpha(msg.role === 'user' ? '#667eea' : '#10B981', 0.2)}`,
+                            borderRadius: 2,
+                            color: 'white',
+                            wordBreak: 'break-word',
+                            '& pre': {
+                              background: alpha('#000', 0.3),
+                              padding: 2,
+                              borderRadius: 1,
+                              overflow: 'auto',
+                              fontSize: '0.875rem',
+                            },
+                            '& code': {
+                              background: alpha('#000', 0.3),
+                              padding: '0.2em 0.4em',
+                              borderRadius: 0.5,
+                              fontSize: '0.875rem',
+                            },
+                          }}
+                        >
+                          <Typography
+                            variant="body1"
+                            sx={{
+                              lineHeight: 1.8,
+                              fontSize: { xs: '0.9rem', md: '1rem' },
+                              whiteSpace: 'pre-wrap',
+                              '& p': {
+                                margin: '0.5em 0',
+                                '&:first-of-type': { marginTop: 0 },
+                                '&:last-of-type': { marginBottom: 0 },
+                              },
+                            }}
+                          >
+                            {msg.content}
+                          </Typography>
+                        </Paper>
+                      </Box>
+                    </Stack>
+                  </motion.div>
+                ))}
+              </AnimatePresence>
+
+              {/* Loading Indicator */}
+              {loading && (
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0 }}
+                >
+                  <Stack direction="row" spacing={3}>
+                    <Avatar
                       sx={{
-                        p: 2.5,
-                        maxWidth: '80%',
-                        alignSelf: 'flex-start',
-                        background: alpha('#fff', 0.1),
-                        color: 'white',
-                        borderRadius: 3,
-                        border: `1px solid ${alpha('#667eea', 0.3)}`,
+                        width: { xs: 32, md: 40 },
+                        height: { xs: 32, md: 40 },
+                        background: 'linear-gradient(135deg, #10B981 0%, #059669 100%)',
+                        flexShrink: 0,
                       }}
                     >
+                      <SmartToyIcon />
+                    </Avatar>
+                    <Box sx={{ flex: 1, pt: 1 }}>
                       <Stack direction="row" spacing={1} alignItems="center">
-                        <CircularProgress size={16} sx={{ color: '#667eea' }} />
-                        <Typography variant="body2">
-                          {i18n.language === 'tr' ? 'Yanıt bekleniyor...' : i18n.language === 'ja' ? '応答を待っています...' : 'Waiting for response...'}
+                        <CircularProgress size={16} sx={{ color: '#10B981' }} />
+                        <Typography variant="caption" sx={{ color: alpha('#fff', 0.6) }}>
+                          {i18n.language === 'tr' ? 'Yazıyor...' : i18n.language === 'ja' ? '入力中...' : 'Typing...'}
                         </Typography>
                       </Stack>
-                    </Paper>
-                  </motion.div>
-                )}
-                <div ref={messagesEndRef} />
-              </Box>
+                    </Box>
+                  </Stack>
+                </motion.div>
+              )}
+              <div ref={messagesEndRef} />
+            </Stack>
+          </Container>
+        </Box>
 
-              <Box
-                sx={{
-                  p: 3,
-                  borderTop: `1px solid ${alpha('#667eea', 0.2)}`,
+        {/* Input Area - ChatGPT Style */}
+        <Box
+          sx={{
+            borderTop: `1px solid ${alpha('#fff', 0.1)}`,
+            background: alpha('#1a1a1a', 0.8),
+            backdropFilter: 'blur(20px)',
+            py: 3,
+            px: { xs: 2, md: 0 },
+          }}
+        >
+          <Container maxWidth="md">
+            <Paper
+              elevation={0}
+              sx={{
+                p: { xs: 1.5, md: 2 },
+                background: alpha('#fff', 0.05),
+                border: `1px solid ${alpha('#667eea', 0.2)}`,
+                borderRadius: 3,
+                display: 'flex',
+                alignItems: 'flex-end',
+                gap: 1,
+                transition: 'all 0.3s ease',
+                '&:focus-within': {
+                  borderColor: '#667eea',
+                  boxShadow: `0 0 0 2px ${alpha('#667eea', 0.2)}`,
+                },
+              }}
+            >
+              <TextField
+                inputRef={inputRef}
+                fullWidth
+                multiline
+                maxRows={6}
+                placeholder={
+                  i18n.language === 'tr'
+                    ? 'Mesajınızı yazın...'
+                    : i18n.language === 'ja'
+                    ? 'メッセージを入力...'
+                    : 'Type your message...'
+                }
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && !e.shiftKey && !loading) {
+                    e.preventDefault()
+                    handleSend()
+                  }
                 }}
-              >
-                <Stack direction="row" spacing={2}>
-                  <TextField
-                    fullWidth
-                    multiline
-                    maxRows={4}
-                    placeholder={
-                      i18n.language === 'tr'
-                        ? 'Mesajınızı yazın...'
-                        : i18n.language === 'ja'
-                        ? 'メッセージを入力...'
-                        : 'Type your message...'
-                    }
-                    value={input}
-                    onChange={(e) => setInput(e.target.value)}
-                    onKeyPress={(e) => {
-                      if (e.key === 'Enter' && !e.shiftKey) {
-                        e.preventDefault()
-                        handleSend()
-                      }
-                    }}
-                    sx={{
-                      '& .MuiOutlinedInput-root': {
-                        background: alpha('#fff', 0.05),
-                        color: 'white',
-                        '& fieldset': {
-                          borderColor: alpha('#667eea', 0.3),
-                        },
-                        '&:hover fieldset': {
-                          borderColor: alpha('#667eea', 0.5),
-                        },
-                        '&.Mui-focused fieldset': {
-                          borderColor: '#667eea',
-                        },
-                      },
-                    }}
-                  />
-                  <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
-                    <IconButton
-                      onClick={handleSend}
-                      disabled={loading || !input.trim()}
-                      sx={{
-                        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                        color: 'white',
-                        width: 56,
-                        height: 56,
-                        '&:hover': {
-                          background: 'linear-gradient(135deg, #764ba2 0%, #667eea 100%)',
-                        },
-                        '&:disabled': {
-                          background: alpha('#667eea', 0.3),
-                        },
-                      }}
-                    >
-                      <SendIcon />
-                    </IconButton>
-                  </motion.div>
-                </Stack>
-              </Box>
-            </CardContent>
-          </Card>
-        </FloatingCard>
-      </Container>
+                disabled={loading}
+                sx={{
+                  '& .MuiOutlinedInput-root': {
+                    background: 'transparent',
+                    color: 'white',
+                    fontSize: { xs: '0.9rem', md: '1rem' },
+                    '& fieldset': {
+                      border: 'none',
+                    },
+                    '&:hover fieldset': {
+                      border: 'none',
+                    },
+                    '&.Mui-focused fieldset': {
+                      border: 'none',
+                    },
+                  },
+                  '& .MuiInputBase-input::placeholder': {
+                    color: alpha('#fff', 0.4),
+                    opacity: 1,
+                  },
+                }}
+              />
+              <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
+                <IconButton
+                  onClick={handleSend}
+                  disabled={loading || !input.trim()}
+                  sx={{
+                    background: input.trim() ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' : alpha('#667eea', 0.2),
+                    color: 'white',
+                    width: { xs: 36, md: 40 },
+                    height: { xs: 36, md: 40 },
+                    flexShrink: 0,
+                    transition: 'all 0.3s ease',
+                    '&:hover': {
+                      background: input.trim() ? 'linear-gradient(135deg, #764ba2 0%, #667eea 100%)' : alpha('#667eea', 0.3),
+                      transform: 'scale(1.1)',
+                    },
+                    '&:disabled': {
+                      background: alpha('#667eea', 0.1),
+                      color: alpha('#fff', 0.3),
+                    },
+                  }}
+                >
+                  {loading ? <StopIcon sx={{ fontSize: { xs: 18, md: 20 } }} /> : <SendIcon sx={{ fontSize: { xs: 18, md: 20 } }} />}
+                </IconButton>
+              </motion.div>
+            </Paper>
+            <Typography
+              variant="caption"
+              sx={{
+                display: 'block',
+                textAlign: 'center',
+                mt: 2,
+                color: alpha('#fff', 0.4),
+                fontSize: { xs: '0.7rem', md: '0.75rem' },
+              }}
+            >
+              {i18n.language === 'tr'
+                ? 'EroxAI yanıtları hata içerebilir. Önemli bilgileri doğrulayın.'
+                : i18n.language === 'ja'
+                ? 'EroxAIの回答には誤りが含まれる可能性があります。重要な情報を確認してください。'
+                : 'EroxAI may produce inaccurate information. Verify important information.'}
+            </Typography>
+          </Container>
+        </Box>
+      </Box>
       <Footer />
     </Box>
   )

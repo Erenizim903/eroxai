@@ -1,0 +1,38 @@
+========================================
+   📋 VDS Manuel Güncelleme Komutları
+========================================
+
+VDS'e SSH ile bağlanıp şu komutları çalıştırın:
+
+1. Bağlan:
+   ssh root@89.47.113.42
+
+2. Güncelleme Komutları:
+   cd /var/www/document-translation-system
+   git pull origin main
+   cd frontend
+   npm install
+   npm run build
+   cd ../backend
+   source ../venv/bin/activate
+   python3 manage.py collectstatic --noinput
+   systemctl restart eroxai
+   systemctl restart nginx
+   systemctl status eroxai nginx
+
+VEYA Tek Komut:
+   bash /var/www/document-translation-system/update_vds.sh
+
+========================================
+   🔐 SSH Şifresi Gerekirse
+========================================
+
+Windows PowerShell'de:
+   ssh root@89.47.113.42
+
+Veya PuTTY kullanarak:
+   Host: 89.47.113.42
+   Port: 22
+   Username: root
+
+========================================
