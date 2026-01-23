@@ -60,6 +60,16 @@ const Navbar = () => {
     setMobileOpen(!mobileOpen)
   }
 
+  const visibleNavItems = navItems.filter((item) => {
+    if (!isAuthenticated) {
+      return item.to === '/'
+    }
+    if (item.to.startsWith('/admin-panel')) {
+      return user?.is_staff
+    }
+    return true
+  })
+
   const drawer = (
     <Box
       sx={{
@@ -88,9 +98,7 @@ const Navbar = () => {
       </Stack>
       <Divider sx={{ borderColor: 'rgba(255,255,255,0.1)', mb: 2 }} />
       <List>
-        {navItems
-          .filter((item) => (item.to.startsWith('/admin-panel') ? user?.is_staff : true))
-          .map((item) => (
+        {visibleNavItems.map((item) => (
             <ListItem key={item.to} disablePadding sx={{ mb: 1 }}>
               <ListItemButton
                 component={RouterLink}
@@ -197,9 +205,7 @@ const Navbar = () => {
           <Stack direction="row" spacing={1} alignItems="center" sx={{ flexWrap: 'wrap', gap: 1 }}>
             {/* Desktop Menu */}
             <Box sx={{ display: { xs: 'none', md: 'flex' }, gap: 1 }}>
-              {navItems
-                .filter((item) => (item.to.startsWith('/admin-panel') ? user?.is_staff : true))
-                .map((item) => (
+              {visibleNavItems.map((item) => (
                   <Button
                     key={item.to}
                     component={RouterLink}

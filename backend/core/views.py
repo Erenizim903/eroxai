@@ -1,4 +1,5 @@
 import uuid
+from pathlib import Path
 from django.conf import settings
 from django.contrib.auth import authenticate
 from django.contrib.auth.models import User
@@ -7,6 +8,7 @@ from django.core.signing import Signer, BadSignature
 from django.core.files import File
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
+from django.utils.text import slugify
 from django.db.models import Count, Q, Sum
 from datetime import timedelta
 from rest_framework import status
@@ -293,6 +295,36 @@ def translate_document(request, doc_id):
 @api_view(["GET"])
 @permission_classes([AllowAny])
 def list_templates(request):
+    if not DocumentTemplate.objects.exists():
+        sample_dir = Path(settings.BASE_DIR) / "sample_templates"
+        if sample_dir.exists():
+            existing_slugs = set(DocumentTemplate.objects.values_list("slug", flat=True))
+            for file_path in sample_dir.iterdir():
+                if not file_path.is_file():
+                    continue
+                ext = file_path.suffix.lower().lstrip(".")
+                if ext not in ["xlsx", "pdf"]:
+                    continue
+                base_name = file_path.stem
+                slug_base = slugify(base_name) or f"template-{uuid.uuid4().hex[:8]}"
+                if slug_base in existing_slugs:
+                    continue
+                slug = slug_base
+                suffix = 1
+                while slug in existing_slugs:
+                    suffix += 1
+                    slug = f"{slug_base}-{suffix}"
+                with open(file_path, "rb") as handle:
+                    template = DocumentTemplate(
+                        name_tr=base_name,
+                        name_en=base_name,
+                        name_ja=base_name,
+                        slug=slug,
+                        template_type=ext,
+                        is_active=True,
+                    )
+                    template.file.save(file_path.name, File(handle), save=True)
+                existing_slugs.add(slug)
     templates = DocumentTemplate.objects.all().order_by("-created_at")
     return Response(DocumentTemplateSerializer(templates, many=True).data)
 
