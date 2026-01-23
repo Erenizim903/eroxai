@@ -1,21 +1,45 @@
-import { Box, Divider, Drawer, IconButton, List, ListItemButton, ListItemIcon, ListItemText, Stack, Toolbar, Typography, alpha } from '@mui/material'
+import { Box, Divider, Drawer, IconButton, List, ListItemButton, ListItemIcon, ListItemText, Stack, Toolbar, Typography, alpha, Button } from '@mui/material'
 import DashboardIcon from '@mui/icons-material/Dashboard'
 import DescriptionIcon from '@mui/icons-material/Description'
 import SettingsIcon from '@mui/icons-material/Settings'
 import PeopleIcon from '@mui/icons-material/People'
 import ListAltIcon from '@mui/icons-material/ListAlt'
 import MenuIcon from '@mui/icons-material/Menu'
+import HomeIcon from '@mui/icons-material/Home'
+import VpnKeyIcon from '@mui/icons-material/VpnKey'
+import MemoryIcon from '@mui/icons-material/Memory'
+import SupportAgentIcon from '@mui/icons-material/SupportAgent'
+import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings'
 import { Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { useState } from 'react'
 
 const drawerWidth = 260
 
-const navItems = [
-  { label: 'Genel Bakış', to: '/admin-panel/overview', icon: <DashboardIcon /> },
-  { label: 'Şablonlar', to: '/admin-panel/templates', icon: <DescriptionIcon /> },
-  { label: 'Site İçerikleri', to: '/admin-panel/content', icon: <SettingsIcon /> },
-  { label: 'Kullanıcılar', to: '/admin-panel/users', icon: <PeopleIcon /> },
-  { label: 'Loglar', to: '/admin-panel/logs', icon: <ListAltIcon /> },
+const navSections = [
+  {
+    title: 'Yönetim',
+    items: [
+      { label: 'Genel Bakış', to: '/admin-panel/overview', icon: <DashboardIcon /> },
+      { label: 'Site İçerikleri', to: '/admin-panel/content', icon: <SettingsIcon /> },
+      { label: 'Kullanıcılar', to: '/admin-panel/users', icon: <PeopleIcon /> },
+      { label: 'Loglar', to: '/admin-panel/logs', icon: <ListAltIcon /> },
+    ],
+  },
+  {
+    title: 'İçerik ve Şablonlar',
+    items: [
+      { label: 'Şablonlar', to: '/admin-panel/templates', icon: <DescriptionIcon /> },
+      { label: 'Premium Key Yönetimi', to: '/admin-panel/premium-keys', icon: <AdminPanelSettingsIcon /> },
+    ],
+  },
+  {
+    title: 'Altyapı',
+    items: [
+      { label: 'API Anahtarları', to: '/admin-panel/api-keys', icon: <VpnKeyIcon /> },
+      { label: 'OCR Durumu', to: '/admin-panel/ocr-status', icon: <MemoryIcon /> },
+      { label: 'Destek Talepleri', to: '/admin-panel/support-requests', icon: <SupportAgentIcon /> },
+    ],
+  },
 ]
 
 const AdminLayout = () => {
@@ -34,32 +58,42 @@ const AdminLayout = () => {
         </Typography>
       </Stack>
       <Divider sx={{ borderColor: 'rgba(255,255,255,0.1)' }} />
-      <List sx={{ px: 1 }}>
-        {navItems.map((item) => (
-          <ListItemButton
-            key={item.to}
-            selected={location.pathname === item.to}
-            onClick={() => {
-              navigate(item.to)
-              setMobileOpen(false)
-            }}
-            sx={{
-              borderRadius: 2,
-              mb: 1,
-              '&.Mui-selected': {
-                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                color: 'white',
-              },
-              '&:hover': {
-                background: 'rgba(102, 126, 234, 0.15)',
-              },
-            }}
-          >
-            <ListItemIcon sx={{ color: 'inherit', minWidth: 36 }}>{item.icon}</ListItemIcon>
-            <ListItemText primary={item.label} />
-          </ListItemButton>
+      <Stack spacing={2} sx={{ px: 1, py: 2 }}>
+        {navSections.map((section) => (
+          <Box key={section.title}>
+            <Typography variant="caption" sx={{ px: 1.5, color: alpha('#fff', 0.5), fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase' }}>
+              {section.title}
+            </Typography>
+            <List sx={{ mt: 1 }}>
+              {section.items.map((item) => (
+                <ListItemButton
+                  key={item.to}
+                  selected={location.pathname === item.to}
+                  onClick={() => {
+                    navigate(item.to)
+                    setMobileOpen(false)
+                  }}
+                  sx={{
+                    borderRadius: 2,
+                    mb: 1,
+                    '&.Mui-selected': {
+                      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                      color: 'white',
+                    },
+                    '&:hover': {
+                      background: 'rgba(102, 126, 234, 0.15)',
+                    },
+                  }}
+                >
+                  <ListItemIcon sx={{ color: 'inherit', minWidth: 36 }}>{item.icon}</ListItemIcon>
+                  <ListItemText primary={item.label} />
+                </ListItemButton>
+              ))}
+            </List>
+            <Divider sx={{ borderColor: 'rgba(255,255,255,0.08)', my: 1.5 }} />
+          </Box>
         ))}
-      </List>
+      </Stack>
     </Box>
   )
 
@@ -98,7 +132,15 @@ const AdminLayout = () => {
           <Typography variant="subtitle1" sx={{ color: 'white', fontWeight: 700 }}>
             Yönetim Paneli
           </Typography>
-          <Box />
+          <Button
+            variant="outlined"
+            size="small"
+            startIcon={<HomeIcon />}
+            onClick={() => navigate('/')}
+            sx={{ borderColor: alpha('#667eea', 0.5), color: 'white' }}
+          >
+            Ana Sayfaya Dön
+          </Button>
         </Toolbar>
         <Box sx={{ px: { xs: 2, md: 4 }, pb: 6 }}>
           <Outlet />

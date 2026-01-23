@@ -64,3 +64,28 @@ export const fetchAdminActivityLogs = async (params = {}) => {
   const { data } = await api.get('/admin/activity-logs/', { params })
   return data
 }
+
+export const fetchApiKeys = async () => {
+  const { data } = await api.get('/admin/api-keys/')
+  return data
+}
+
+export const updateApiKeys = async (payload) => {
+  const { data } = await api.put('/admin/api-keys/', payload)
+  return data
+}
+
+export const fetchOcrStatus = async () => {
+  const { data } = await api.get('/admin/ocr-status/')
+  return data
+}
+
+export const fetchSupportRequests = async () => {
+  const { data } = await api.get('/admin/support-requests/')
+  return data
+}
+
+export const updateSupportRequest = async (requestId, payload) => {
+  const { data } = await api.put(`/admin/support-requests/${requestId}/update/`, payload)
+  return data
+}

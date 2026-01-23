@@ -1,6 +1,7 @@
 import base64
 import re
 import requests
+from core.models import SiteSettings
 import dns.resolver
 from django.conf import settings
 
@@ -21,8 +22,16 @@ def extract_base64(data_url):
     return match.group(1) if match else data_url
 
 
+def _get_google_vision_key():
+    site_settings = SiteSettings.objects.first()
+    if site_settings and site_settings.google_vision_api_key:
+        return site_settings.google_vision_api_key
+    return settings.GOOGLE_VISION_API_KEY
+
+
 def request_google_vision_text(base64_image, language_hint=None):
-    if not settings.GOOGLE_VISION_API_KEY:
+    api_key = _get_google_vision_key()
+    if not api_key:
         raise ValueError("GOOGLE_VISION_API_KEY is missing")
 
     payload = {
@@ -38,7 +47,7 @@ def request_google_vision_text(base64_image, language_hint=None):
         payload["requests"][0]["imageContext"] = {"languageHints": [language_hint]}
 
     response = requests.post(
-        f"https://vision.googleapis.com/v1/images:annotate?key={settings.GOOGLE_VISION_API_KEY}",
+        f"https://vision.googleapis.com/v1/images:annotate?key={api_key}",
         json=payload,
         timeout=60,
     )

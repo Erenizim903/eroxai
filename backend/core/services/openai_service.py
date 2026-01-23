@@ -1,9 +1,12 @@
 import requests
 from django.conf import settings
+from core.models import SiteSettings
 
 
 def translate_text(text, source, target, model=None):
-    if not settings.OPENAI_API_KEY:
+    site_settings = SiteSettings.objects.first()
+    api_key = site_settings.openai_api_key if site_settings and site_settings.openai_api_key else settings.OPENAI_API_KEY
+    if not api_key:
         raise ValueError("OPENAI_API_KEY is missing")
     if not text.strip():
         return ""
@@ -17,7 +20,7 @@ def translate_text(text, source, target, model=None):
         "https://api.openai.com/v1/responses",
         headers={
             "Content-Type": "application/json",
-            "Authorization": f"Bearer {settings.OPENAI_API_KEY}",
+            "Authorization": f"Bearer {api_key}",
         },
         json={
             "model": model,

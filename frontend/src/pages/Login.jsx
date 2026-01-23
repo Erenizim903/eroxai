@@ -34,7 +34,12 @@ const Login = () => {
       enqueueSnackbar('Giriş başarılı', { variant: 'success' })
       navigate('/dashboard')
     } catch (error) {
-      enqueueSnackbar('Giriş başarısız', { variant: 'error' })
+      const code = error?.response?.data?.code
+      if (error?.response?.status === 429 && code === 'support_required') {
+        enqueueSnackbar('5 başarısız deneme sonrası destek talebi oluşturuldu.', { variant: 'warning' })
+      } else {
+        enqueueSnackbar('Giriş başarısız', { variant: 'error' })
+      }
     }
   }
 

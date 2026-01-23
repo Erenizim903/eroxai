@@ -27,6 +27,10 @@ const AdminContent = () => {
     theme_preset: 'ocean',
   })
   const [siteTextsJson, setSiteTextsJson] = useState('{}')
+  const [homepageSectionsJson, setHomepageSectionsJson] = useState('{}')
+  const [navigationTextsJson, setNavigationTextsJson] = useState('{}')
+  const [dashboardTextsJson, setDashboardTextsJson] = useState('{}')
+  const [chatTextsJson, setChatTextsJson] = useState('{}')
   const [logoFile, setLogoFile] = useState(null)
   const [saving, setSaving] = useState(false)
   const inputSx = useMemo(
@@ -54,12 +58,24 @@ const AdminContent = () => {
       ...siteSettings,
     }))
     setSiteTextsJson(JSON.stringify(siteSettings.site_texts || {}, null, 2))
+    setHomepageSectionsJson(JSON.stringify(siteSettings.homepage_sections || {}, null, 2))
+    setNavigationTextsJson(JSON.stringify(siteSettings.navigation_texts || {}, null, 2))
+    setDashboardTextsJson(JSON.stringify(siteSettings.dashboard_texts || {}, null, 2))
+    setChatTextsJson(JSON.stringify(siteSettings.chat_texts || {}, null, 2))
   }, [siteSettings])
 
   const handleSave = async () => {
     let site_texts = {}
+    let homepage_sections = {}
+    let navigation_texts = {}
+    let dashboard_texts = {}
+    let chat_texts = {}
     try {
       site_texts = siteTextsJson ? JSON.parse(siteTextsJson) : {}
+      homepage_sections = homepageSectionsJson ? JSON.parse(homepageSectionsJson) : {}
+      navigation_texts = navigationTextsJson ? JSON.parse(navigationTextsJson) : {}
+      dashboard_texts = dashboardTextsJson ? JSON.parse(dashboardTextsJson) : {}
+      chat_texts = chatTextsJson ? JSON.parse(chatTextsJson) : {}
     } catch (error) {
       alert('JSON formatı hatalı. Lütfen kontrol edin.')
       return
@@ -68,7 +84,7 @@ const AdminContent = () => {
     try {
       if (logoFile) {
         const payload = new FormData()
-        Object.entries({ ...form, site_texts }).forEach(([key, value]) => {
+        Object.entries({ ...form, site_texts, homepage_sections, navigation_texts, dashboard_texts, chat_texts }).forEach(([key, value]) => {
           if (value !== null && value !== undefined) {
             payload.append(key, value)
           }
@@ -76,7 +92,7 @@ const AdminContent = () => {
         payload.append('logo', logoFile)
         await updateSiteSettings(payload)
       } else {
-        await updateSiteSettings({ ...form, site_texts })
+        await updateSiteSettings({ ...form, site_texts, homepage_sections, navigation_texts, dashboard_texts, chat_texts })
       }
       await loadSettings()
       setLogoFile(null)
@@ -183,6 +199,74 @@ const AdminContent = () => {
                 label="site_texts"
                 value={siteTextsJson}
                 onChange={(e) => setSiteTextsJson(e.target.value)}
+                multiline
+                minRows={12}
+                sx={inputSx}
+              />
+            </CardContent>
+          </Card>
+        </Grid>
+        <Grid item xs={12} md={6}>
+          <Card sx={{ p: 3, borderRadius: 3, background: alpha('#fff', 0.03), border: `1px solid ${alpha('#667eea', 0.2)}`, backdropFilter: 'blur(18px)' }}>
+            <CardContent>
+              <Typography variant="h6" sx={{ color: 'white', fontWeight: 700, mb: 2 }}>
+                Home Bölümleri (JSON)
+              </Typography>
+              <TextField
+                label="homepage_sections"
+                value={homepageSectionsJson}
+                onChange={(e) => setHomepageSectionsJson(e.target.value)}
+                multiline
+                minRows={12}
+                sx={inputSx}
+              />
+            </CardContent>
+          </Card>
+        </Grid>
+        <Grid item xs={12} md={6}>
+          <Card sx={{ p: 3, borderRadius: 3, background: alpha('#fff', 0.03), border: `1px solid ${alpha('#667eea', 0.2)}`, backdropFilter: 'blur(18px)' }}>
+            <CardContent>
+              <Typography variant="h6" sx={{ color: 'white', fontWeight: 700, mb: 2 }}>
+                Navigasyon Metinleri (JSON)
+              </Typography>
+              <TextField
+                label="navigation_texts"
+                value={navigationTextsJson}
+                onChange={(e) => setNavigationTextsJson(e.target.value)}
+                multiline
+                minRows={12}
+                sx={inputSx}
+              />
+            </CardContent>
+          </Card>
+        </Grid>
+        <Grid item xs={12} md={6}>
+          <Card sx={{ p: 3, borderRadius: 3, background: alpha('#fff', 0.03), border: `1px solid ${alpha('#667eea', 0.2)}`, backdropFilter: 'blur(18px)' }}>
+            <CardContent>
+              <Typography variant="h6" sx={{ color: 'white', fontWeight: 700, mb: 2 }}>
+                Dashboard Metinleri (JSON)
+              </Typography>
+              <TextField
+                label="dashboard_texts"
+                value={dashboardTextsJson}
+                onChange={(e) => setDashboardTextsJson(e.target.value)}
+                multiline
+                minRows={12}
+                sx={inputSx}
+              />
+            </CardContent>
+          </Card>
+        </Grid>
+        <Grid item xs={12} md={6}>
+          <Card sx={{ p: 3, borderRadius: 3, background: alpha('#fff', 0.03), border: `1px solid ${alpha('#667eea', 0.2)}`, backdropFilter: 'blur(18px)' }}>
+            <CardContent>
+              <Typography variant="h6" sx={{ color: 'white', fontWeight: 700, mb: 2 }}>
+                Chat Metinleri (JSON)
+              </Typography>
+              <TextField
+                label="chat_texts"
+                value={chatTextsJson}
+                onChange={(e) => setChatTextsJson(e.target.value)}
                 multiline
                 minRows={12}
                 sx={inputSx}

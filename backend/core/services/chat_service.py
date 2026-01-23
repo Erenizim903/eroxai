@@ -15,6 +15,11 @@ def get_chat_provider_settings():
                     'deepseek': site_settings.deepseek_endpoint or 'https://api.deepseek.com/v1/chat/completions',
                     'blackbox': site_settings.blackbox_endpoint or 'https://www.blackbox.ai/api/chat',
                 },
+                'keys': {
+                    'openai': site_settings.openai_api_key or settings.OPENAI_API_KEY,
+                    'deepseek': site_settings.deepseek_api_key or settings.OPENAI_API_KEY,
+                    'blackbox': site_settings.blackbox_api_key or '',
+                },
             }
     except:
         pass
@@ -24,6 +29,11 @@ def get_chat_provider_settings():
             'openai': 'https://api.openai.com/v1/chat/completions',
             'deepseek': 'https://api.deepseek.com/v1/chat/completions',
             'blackbox': 'https://www.blackbox.ai/api/chat',
+        },
+        'keys': {
+            'openai': settings.OPENAI_API_KEY,
+            'deepseek': settings.OPENAI_API_KEY,
+            'blackbox': '',
         },
     }
 
@@ -36,6 +46,7 @@ def chat_with_ai(message, language="tr", provider=None):
     provider_settings = get_chat_provider_settings()
     active_provider = provider or provider_settings['provider']
     endpoint = provider_settings['endpoints'].get(active_provider, provider_settings['endpoints']['openai'])
+    api_key = provider_settings['keys'].get(active_provider)
     
     system_prompts = {
         "tr": "Sen EroxAI Studio platformunun yardımcı asistanısın. Kullanıcılara platform hakkında bilgi ver, OCR ve çeviri özelliklerini açıkla. Kısa, net ve yardımcı ol.",
@@ -47,27 +58,27 @@ def chat_with_ai(message, language="tr", provider=None):
     
     try:
         if active_provider == 'openai':
-            return _chat_openai(endpoint, message, system_prompt)
+            return _chat_openai(endpoint, message, system_prompt, api_key)
         elif active_provider == 'deepseek':
-            return _chat_deepseek(endpoint, message, system_prompt)
+            return _chat_deepseek(endpoint, message, system_prompt, api_key)
         elif active_provider == 'blackbox':
-            return _chat_blackbox(endpoint, message, system_prompt)
+            return _chat_blackbox(endpoint, message, system_prompt, api_key)
         else:
             return _chat_openai(endpoint, message, system_prompt)
     except Exception as e:
         return f"Chat bot şu anda kullanılamıyor. Lütfen daha sonra tekrar deneyin. ({str(e)[:50]})"
 
 
-def _chat_openai(endpoint, message, system_prompt):
+def _chat_openai(endpoint, message, system_prompt, api_key):
     """OpenAI API çağrısı"""
-    if not settings.OPENAI_API_KEY:
+    if not api_key:
         raise ValueError("OPENAI_API_KEY is missing")
     
     response = requests.post(
         endpoint,
         headers={
             "Content-Type": "application/json",
-            "Authorization": f"Bearer {settings.OPENAI_API_KEY}",
+            "Authorization": f"Bearer {api_key}",
         },
         json={
             "model": "gpt-3.5-turbo",
@@ -85,16 +96,16 @@ def _chat_openai(endpoint, message, system_prompt):
     return data.get("choices", [{}])[0].get("message", {}).get("content", "Üzgünüm, bir hata oluştu.")
 
 
-def _chat_deepseek(endpoint, message, system_prompt):
+def _chat_deepseek(endpoint, message, system_prompt, api_key):
     """DeepSeek API çağrısı"""
-    if not settings.OPENAI_API_KEY:
-        raise ValueError("API_KEY is missing (using OPENAI_API_KEY for DeepSeek)")
+    if not api_key:
+        raise ValueError("API_KEY is missing for DeepSeek")
     
     response = requests.post(
         endpoint,
         headers={
             "Content-Type": "application/json",
-            "Authorization": f"Bearer {settings.OPENAI_API_KEY}",
+            "Authorization": f"Bearer {api_key}",
         },
         json={
             "model": "deepseek-chat",
@@ -112,12 +123,13 @@ def _chat_deepseek(endpoint, message, system_prompt):
     return data.get("choices", [{}])[0].get("message", {}).get("content", "Üzgünüm, bir hata oluştu.")
 
 
-def _chat_blackbox(endpoint, message, system_prompt):
+def _chat_blackbox(endpoint, message, system_prompt, api_key=None):
     """Blackbox API çağrısı"""
     response = requests.post(
         endpoint,
         headers={
             "Content-Type": "application/json",
+            **({"Authorization": f"Bearer {api_key}"} if api_key else {}),
         },
         json={
             "messages": [

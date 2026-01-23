@@ -1,6 +1,6 @@
 from django.contrib.auth.models import User
 from rest_framework import serializers
-from .models import UserProfile, PremiumKey, DocumentTemplate, Document, TemplateFill, TemplateField, SiteSettings, UsageLog, PremiumKeyRequest, UserActivityLog, AIChatLog
+from .models import UserProfile, PremiumKey, DocumentTemplate, Document, TemplateFill, TemplateField, SiteSettings, UsageLog, PremiumKeyRequest, UserActivityLog, AIChatLog, SupportRequest
 
 
 class UserProfileSerializer(serializers.ModelSerializer):
@@ -60,6 +60,8 @@ class ProfileUpdateSerializer(serializers.Serializer):
 
 
 class DocumentTemplateSerializer(serializers.ModelSerializer):
+    name = serializers.CharField(source="name_tr")
+    description = serializers.CharField(source="description_tr", allow_blank=True, required=False)
     fields = serializers.SerializerMethodField()
 
     class Meta:
@@ -141,6 +143,42 @@ class SiteSettingsSerializer(serializers.ModelSerializer):
             "chat_texts",
             "navigation_texts",
             "dashboard_texts",
+        )
+
+
+class ApiKeysSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = SiteSettings
+        fields = (
+            "openai_api_key",
+            "google_vision_api_key",
+            "deepseek_api_key",
+            "blackbox_api_key",
+        )
+
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        payload = {}
+        for key, value in data.items():
+            payload[key] = ""
+            payload[f"{key}_set"] = bool(value)
+        return payload
+
+
+class SupportRequestSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = SupportRequest
+        fields = (
+            "id",
+            "user",
+            "username",
+            "email",
+            "reason",
+            "status",
+            "ip_address",
+            "user_agent",
+            "created_at",
+            "updated_at",
         )
 
 

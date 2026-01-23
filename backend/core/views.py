@@ -1,11 +1,15 @@
 import uuid
+import io
+import json
 from pathlib import Path
 from django.conf import settings
 from django.contrib.auth import authenticate
 from django.contrib.auth.models import User
+from django.core.cache import cache
 from django.core.mail import send_mail
 from django.core.signing import Signer, BadSignature
 from django.core.files import File
+from django.core.files.base import ContentFile
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from django.utils.text import slugify
@@ -17,7 +21,7 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
 
-from .models import Document, DocumentTemplate, PremiumKey, PremiumKeyRequest, TemplateFill, UsageLog, UserActivityLog, AIChatLog, SiteSettings, TemplateField, UserProfile
+from .models import Document, DocumentTemplate, PremiumKey, PremiumKeyRequest, TemplateFill, UsageLog, UserActivityLog, AIChatLog, SiteSettings, TemplateField, UserProfile, SupportRequest
 from .permissions import IsVerifiedEmail, IsAdminUser
 from .serializers import (
     RegisterSerializer,
@@ -33,6 +37,8 @@ from .serializers import (
     AIChatLogSerializer,
     TemplateFieldSerializer,
     ProfileUpdateSerializer,
+    ApiKeysSerializer,
+    SupportRequestSerializer,
 )
 from .services.file_processing import get_file_type
 from .services.ocr_service import run_google_vision_ocr
@@ -41,6 +47,7 @@ from .services.chat_service import chat_with_ai, get_chat_provider_settings
 from .services.template_render import render_pdf, render_xlsx, render_blank, render_free_text
 from .services.utils import validate_email_domain
 from openpyxl import load_workbook
+from PIL import Image
 import xlrd
 
 signer = Signer()
@@ -141,7 +148,24 @@ def login(request):
     password = request.data.get("password")
     user = authenticate(username=username, password=password)
     if not user:
+        ip_address = get_client_ip(request)
+        cache_key = f"login_fail:{ip_address}:{username}"
+        attempts = cache.get(cache_key, 0) + 1
+        cache.set(cache_key, attempts, timeout=900)
+        if attempts >= 5:
+            support_user = User.objects.filter(username=username).first()
+            SupportRequest.objects.create(
+                user=support_user,
+                username=username or "",
+                email=support_user.email if support_user else "",
+                reason="5 başarısız giriş denemesi sonrası otomatik talep.",
+                status="pending",
+                ip_address=ip_address,
+                user_agent=request.META.get("HTTP_USER_AGENT", ""),
+            )
+            return Response({"error": "Support request required.", "code": "support_required"}, status=status.HTTP_429_TOO_MANY_REQUESTS)
         return Response({"error": "Invalid credentials."}, status=status.HTTP_401_UNAUTHORIZED)
+    cache.delete(f"login_fail:{get_client_ip(request)}:{username}")
     
     # Log login activity
     ip_address = get_client_ip(request)
@@ -332,9 +356,52 @@ def list_templates(request):
 @api_view(["POST"])
 @permission_classes([IsAuthenticated, IsVerifiedEmail, IsAdminUser])
 def create_template(request):
-    serializer = DocumentTemplateSerializer(data=request.data)
-    serializer.is_valid(raise_exception=True)
-    template = serializer.save(created_by=request.user)
+    name = request.data.get("name") or request.data.get("name_tr")
+    if not name:
+        return Response({"error": "Template name is required."}, status=status.HTTP_400_BAD_REQUEST)
+
+    description = request.data.get("description") or request.data.get("description_tr") or ""
+    template_type = (request.data.get("template_type") or "xlsx").lower()
+    output_language = request.data.get("output_language") or "ja"
+    raw_schema = request.data.get("fields_schema", "{}")
+    if isinstance(raw_schema, str):
+        try:
+            fields_schema = json.loads(raw_schema) if raw_schema else {}
+        except json.JSONDecodeError:
+            return Response({"error": "Invalid fields_schema JSON."}, status=status.HTTP_400_BAD_REQUEST)
+    else:
+        fields_schema = raw_schema or {}
+
+    upload = request.FILES.get("file")
+    image_types = {"png", "jpg", "jpeg"}
+    if template_type in image_types:
+        template_type = "pdf"
+
+    template = DocumentTemplate.objects.create(
+        name_tr=name,
+        description_tr=description,
+        template_type=template_type if template_type in {"xlsx", "pdf", "blank"} else "xlsx",
+        output_language=output_language,
+        fields_schema=fields_schema,
+        created_by=request.user,
+    )
+
+    if upload:
+        ext = Path(upload.name).suffix.lower().lstrip(".")
+        if ext in image_types:
+            image = Image.open(upload)
+            if image.mode not in ("RGB", "L"):
+                image = image.convert("RGB")
+            buffer = io.BytesIO()
+            image.save(buffer, format="PDF")
+            buffer.seek(0)
+            filename = f"{Path(upload.name).stem}.pdf"
+            template.file.save(filename, ContentFile(buffer.read()), save=True)
+            template.template_type = "pdf"
+            template.save(update_fields=["file", "template_type"])
+        else:
+            template.file.save(upload.name, upload, save=True)
+
     return Response(DocumentTemplateSerializer(template).data, status=status.HTTP_201_CREATED)
 
 
@@ -407,6 +474,51 @@ def site_settings(request):
 def update_site_settings(request):
     settings_obj, _ = SiteSettings.objects.get_or_create(id=1)
     serializer = SiteSettingsSerializer(settings_obj, data=request.data, partial=True)
+    serializer.is_valid(raise_exception=True)
+    serializer.save()
+    return Response(serializer.data)
+
+
+@api_view(["GET", "PUT"])
+@permission_classes([IsAuthenticated, IsAdminUser])
+def admin_api_keys(request):
+    settings_obj, _ = SiteSettings.objects.get_or_create(id=1)
+    if request.method == "GET":
+        return Response(ApiKeysSerializer(settings_obj).data)
+    serializer = ApiKeysSerializer(settings_obj, data=request.data, partial=True)
+    serializer.is_valid(raise_exception=True)
+    serializer.save()
+    return Response(ApiKeysSerializer(settings_obj).data)
+
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated, IsAdminUser])
+def admin_ocr_status(request):
+    try:
+        import pytesseract
+        tesseract_available = True
+    except Exception:
+        tesseract_available = False
+    settings_obj, _ = SiteSettings.objects.get_or_create(id=1)
+    google_key = settings_obj.google_vision_api_key or settings.GOOGLE_VISION_API_KEY
+    return Response({
+        "tesseract_available": tesseract_available,
+        "google_vision_configured": bool(google_key),
+    })
+
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated, IsAdminUser])
+def admin_support_requests(request):
+    items = SupportRequest.objects.all().order_by("-created_at")[:500]
+    return Response(SupportRequestSerializer(items, many=True).data)
+
+
+@api_view(["PUT"])
+@permission_classes([IsAuthenticated, IsAdminUser])
+def admin_support_request_update(request, request_id):
+    item = get_object_or_404(SupportRequest, id=request_id)
+    serializer = SupportRequestSerializer(item, data=request.data, partial=True)
     serializer.is_valid(raise_exception=True)
     serializer.save()
     return Response(serializer.data)

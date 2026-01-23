@@ -1,4 +1,4 @@
-﻿import {
+import {
   Box,
   Button,
   Card,
@@ -16,7 +16,6 @@
 import { motion, useScroll, useTransform } from 'framer-motion'
 import { useRef } from 'react'
 import BoltIcon from '@mui/icons-material/Bolt'
-import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome'
 import LanguageIcon from '@mui/icons-material/Language'
 import PlayCircleOutlineIcon from '@mui/icons-material/PlayCircleOutline'
 import TrendingUpIcon from '@mui/icons-material/TrendingUp'
@@ -115,9 +114,9 @@ const Home = () => {
         <Box ref={heroRef} sx={{ position: 'relative', pt: { xs: 8, md: 16 }, pb: { xs: 12, md: 20 }, minHeight: '90vh', display: 'flex', alignItems: 'center' }}>
           <motion.div style={{ opacity, scale }}>
             <Container maxWidth="lg">
-              <Grid container spacing={4} alignItems="center">
-                <Grid item xs={12} md={6}>
-                  <Stack spacing={4}>
+              <Grid container spacing={4} alignItems="center" justifyContent="center">
+                <Grid item xs={12} md={10} lg={8}>
+                  <Stack spacing={4} alignItems="center" textAlign="center">
                     <motion.div
                       initial={{ opacity: 0, x: -50 }}
                       animate={{ opacity: 1, x: 0 }}
@@ -144,6 +143,7 @@ const Home = () => {
                           fontWeight: 900,
                           lineHeight: 1.1,
                           mb: 3,
+                          textAlign: 'center',
                           background: 'linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%)',
                           WebkitBackgroundClip: 'text',
                           WebkitTextFillColor: 'transparent',
@@ -158,11 +158,12 @@ const Home = () => {
                           mb: 4,
                           lineHeight: 1.8,
                           fontSize: { xs: '1rem', sm: '1.1rem', md: '1.3rem' },
+                          textAlign: 'center',
                         }}
                       >
                         {siteSettings?.hero_subtitle || t('home.hero.subtitle')}
                       </AnimatedText>
-                      <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} sx={{ mb: 4 }}>
+                      <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} sx={{ mb: 4, justifyContent: 'center' }}>
                         <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
                           <Button
                             component={RouterLink}
@@ -213,7 +214,7 @@ const Home = () => {
                           </Button>
                         </motion.div>
                       </Stack>
-                      <Stack direction="row" spacing={2} flexWrap="wrap" gap={2} sx={{ mb: 3 }}>
+                      <Stack direction="row" spacing={2} flexWrap="wrap" gap={2} sx={{ mb: 3, justifyContent: 'center' }}>
                         {[
                           { icon: <SpeedIcon />, text: 'Hızlı İşlem' },
                           { icon: <SecurityIcon />, text: 'Güvenli Sistem' },
@@ -247,20 +248,13 @@ const Home = () => {
                             sx={{
                               color: alpha('#fff', 0.6),
                               mb: 2,
-                              textAlign: { xs: 'center', md: 'left' },
+                              textAlign: 'center',
                               fontSize: { xs: '0.7rem', md: '0.875rem' },
                             }}
                           >
                             {i18n.language === 'tr' ? 'Bizi Takip Edin' : i18n.language === 'ja' ? 'フォローしてください' : 'Follow Us'}
                           </AnimatedText>
-                          <Stack
-                            direction="row"
-                            spacing={1.5}
-                            justifyContent={{ xs: 'center', md: 'flex-start' }}
-                            flexWrap="wrap"
-                            gap={1.5}
-                            sx={{ mt: 1 }}
-                          >
+                          <Stack direction="row" spacing={1.5} justifyContent="center" flexWrap="wrap" gap={1.5} sx={{ mt: 1 }}>
                             {socialLinks.map((link, idx) => (
                               <motion.div
                                 key={idx}
@@ -299,100 +293,110 @@ const Home = () => {
                     </motion.div>
                   </Stack>
                 </Grid>
-                <Grid item xs={12} md={6}>
-                  <motion.div
-                    initial={{ opacity: 0, y: 30 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.8, delay: 0.3 }}
-                  >
-                    <Card
-                      sx={{
-                        p: { xs: 3, md: 6 },
-                        backdropFilter: 'blur(30px)',
-                        background: 'linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%)',
-                        border: `2px solid ${alpha('#667eea', 0.3)}`,
-                        borderRadius: 4,
-                        boxShadow: '0 30px 80px rgba(102, 126, 234, 0.2)',
-                        position: 'relative',
-                        overflow: 'hidden',
-                        '&::before': {
-                          content: '""',
-                          position: 'absolute',
-                          top: 0,
-                          left: 0,
-                          right: 0,
-                          height: '4px',
-                          background: 'linear-gradient(90deg, #667eea 0%, #764ba2 50%, #f093fb 100%)',
-                        },
-                      }}
-                    >
-                      <CardContent>
-                        <Stack spacing={4} alignItems="center" textAlign="center">
-                          <Box
-                            sx={{
-                              width: { xs: 200, md: 300 },
-                              height: { xs: 150, md: 200 },
-                              borderRadius: 3,
-                              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                              position: 'relative',
-                              overflow: 'hidden',
-                              boxShadow: '0 20px 60px rgba(102, 126, 234, 0.4)',
-                            }}
-                          >
-                            <motion.div
-                              animate={{ rotate: 360 }}
-                              transition={{ duration: 20, repeat: Infinity, ease: 'linear' }}
-                              style={{ position: 'absolute', width: '200%', height: '200%', background: 'radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%)' }}
-                            />
-                            <Stack spacing={1} alignItems="center" sx={{ zIndex: 1 }}>
-                              <AutoAwesomeIcon sx={{ fontSize: { xs: 60, md: 80 }, color: 'white' }} />
-                              <AutoAwesomeIcon sx={{ fontSize: { xs: 40, md: 50 }, color: 'white', opacity: 0.8 }} />
-                              <AutoAwesomeIcon sx={{ fontSize: { xs: 30, md: 40 }, color: 'white', opacity: 0.6 }} />
-                            </Stack>
-                          </Box>
-                          <Box>
-                            <TypewriterText
-                              text={i18n.language === 'tr' ? 'Profesyonel Belge Tasarımı' : i18n.language === 'ja' ? 'プロフェッショナル文書デザイン' : 'Professional Document Design'}
-                              variant="h4"
-                              speed={60}
-                              sx={{
-                                fontWeight: 800,
-                                mb: 2,
-                                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                                WebkitBackgroundClip: 'text',
-                                WebkitTextFillColor: 'transparent',
-                                fontSize: { xs: '1.5rem', sm: '1.75rem', md: '2.5rem' },
-                              }}
-                            />
-                            <AnimatedText
-                              variant="body1"
-                              delay={0.5}
-                              sx={{
-                                color: alpha('#fff', 0.8),
-                                lineHeight: 1.9,
-                                fontSize: { xs: '0.9rem', md: '1.1rem' },
-                                maxWidth: 800,
-                                mx: 'auto',
-                              }}
-                            >
-                              {i18n.language === 'tr'
-                                ? 'Şablon seç, alanları doldur, Japonca formatında profesyonel belge oluştur. Fiş kesme, sözleşme doldurma, zehirli atık belgeleri ve diğer resmi evrakları hızlı ve kolay bir şekilde oluştur.'
-                                : i18n.language === 'ja'
-                                ? 'テンプレートを選択し、フィールドに入力し、日本語形式でプロフェッショナルな文書を作成します。レシート発行、契約書入力、有害廃棄物文書、その他の公式文書を迅速かつ簡単に作成できます。'
-                                : 'Select a template, fill in the fields, create professional documents in Japanese format. Create receipts, contracts, hazardous waste documents and other official documents quickly and easily.'}
-                            </AnimatedText>
-                          </Box>
-                        </Stack>
-                      </CardContent>
-                    </Card>
-                  </motion.div>
-                </Grid>
               </Grid>
             </Container>
           </motion.div>
+        </Box>
+
+        <Box sx={{ py: { xs: 8, md: 12 }, position: 'relative' }}>
+          <Container maxWidth="lg">
+            <SectionTitle
+              kicker={i18n.language === 'tr' ? 'Kullanım Alanları' : i18n.language === 'ja' ? '活用シーン' : 'Use Cases'}
+              title={i18n.language === 'tr' ? 'Günlük İşlerde Nasıl Kullanılır?' : i18n.language === 'ja' ? '日常業務での使い方' : 'How You Can Use It'}
+              subtitle={
+                i18n.language === 'tr'
+                  ? 'Belge hazırlama, kontrol ve çıktı süreçlerini tek panelde tamamlayın.'
+                  : i18n.language === 'ja'
+                  ? '書類作成・確認・出力をワンパネルで完結。'
+                  : 'Complete document creation, review, and export in one panel.'
+              }
+            />
+            <Grid container spacing={4}>
+              {[
+                {
+                  icon: <BuildIcon />,
+                  title: i18n.language === 'tr' ? 'Şantiye ve İnşaat' : i18n.language === 'ja' ? '建設・現場' : 'Construction',
+                  desc:
+                    i18n.language === 'tr'
+                      ? 'Günlük formlar, teslim tutanakları ve denetim belgelerini hızlıca hazırlayın.'
+                      : i18n.language === 'ja'
+                      ? '日報・受領書・点検書類を素早く作成。'
+                      : 'Prepare daily forms, delivery logs, and inspection documents quickly.',
+                },
+                {
+                  icon: <InfoIcon />,
+                  title: i18n.language === 'tr' ? 'Yasal Evraklar' : i18n.language === 'ja' ? '法的書類' : 'Legal Documents',
+                  desc:
+                    i18n.language === 'tr'
+                      ? 'Sözleşme, beyan ve izin süreçlerinde şablonları standartlaştırın.'
+                      : i18n.language === 'ja'
+                      ? '契約書・申請書のテンプレートを標準化。'
+                      : 'Standardize contracts, declarations, and permits with templates.',
+                },
+                {
+                  icon: <SecurityIcon />,
+                  title: i18n.language === 'tr' ? 'Atık ve Çevre' : i18n.language === 'ja' ? '廃棄物・環境' : 'Waste & Compliance',
+                  desc:
+                    i18n.language === 'tr'
+                      ? 'Zehirli atık bildirimleri ve çevre raporlarını tek yerden yönetin.'
+                      : i18n.language === 'ja'
+                      ? '有害廃棄物の報告書や環境レポートを一元管理。'
+                      : 'Manage hazardous waste reports and compliance documents centrally.',
+                },
+                {
+                  icon: <TrendingUpIcon />,
+                  title: i18n.language === 'tr' ? 'Operasyon & Raporlama' : i18n.language === 'ja' ? '運用・レポート' : 'Operations',
+                  desc:
+                    i18n.language === 'tr'
+                      ? 'OCR + otomatik çeviri ile süreçleri hızlandırın, hata riskini azaltın.'
+                      : i18n.language === 'ja'
+                      ? 'OCRと自動翻訳でスピードを上げ、ミスを削減。'
+                      : 'Speed up workflows with OCR + translation and reduce errors.',
+                },
+              ].map((card, idx) => (
+                <Grid item xs={12} md={6} key={idx}>
+                  <FloatingCard delay={idx * 0.1}>
+                    <Card
+                      sx={{
+                        p: { xs: 3, md: 4 },
+                        borderRadius: 4,
+                        background: alpha('#fff', 0.03),
+                        border: `1px solid ${alpha('#667eea', 0.2)}`,
+                        backdropFilter: 'blur(20px)',
+                      }}
+                    >
+                      <CardContent>
+                        <Stack spacing={2}>
+                          <Stack direction="row" spacing={2} alignItems="center">
+                            <Box
+                              sx={{
+                                width: 48,
+                                height: 48,
+                                borderRadius: 2,
+                                background: alpha('#667eea', 0.2),
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                color: '#fff',
+                              }}
+                            >
+                              {card.icon}
+                            </Box>
+                            <Typography variant="h6" sx={{ color: '#fff', fontWeight: 700 }}>
+                              {card.title}
+                            </Typography>
+                          </Stack>
+                          <Typography variant="body2" sx={{ color: alpha('#fff', 0.7), lineHeight: 1.8 }}>
+                            {card.desc}
+                          </Typography>
+                        </Stack>
+                      </CardContent>
+                    </Card>
+                  </FloatingCard>
+                </Grid>
+              ))}
+            </Grid>
+          </Container>
         </Box>
 
         <Box sx={{ py: { xs: 8, md: 12 }, position: 'relative' }}>

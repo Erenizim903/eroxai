@@ -16,6 +16,10 @@ import AdminTemplates from './pages/admin/AdminTemplates'
 import AdminContent from './pages/admin/AdminContent'
 import AdminUsers from './pages/admin/AdminUsers'
 import AdminLogs from './pages/admin/AdminLogs'
+import AdminPremiumKeys from './pages/admin/AdminPremiumKeys'
+import AdminApiKeys from './pages/admin/AdminApiKeys'
+import AdminOcrStatus from './pages/admin/AdminOcrStatus'
+import AdminSupportRequests from './pages/admin/AdminSupportRequests'
 import { useAuthStore } from './store/useAuthStore'
 import Profile from './pages/Profile'
 import Themes from './pages/Themes'
@@ -109,6 +113,10 @@ function App() {
           <Route path="content" element={<AdminContent />} />
           <Route path="users" element={<AdminUsers />} />
           <Route path="logs" element={<AdminLogs />} />
+          <Route path="premium-keys" element={<AdminPremiumKeys />} />
+          <Route path="api-keys" element={<AdminApiKeys />} />
+          <Route path="ocr-status" element={<AdminOcrStatus />} />
+          <Route path="support-requests" element={<AdminSupportRequests />} />
           <Route path="*" element={<Navigate to="/admin-panel/overview" replace />} />
         </Route>
         <Route path="/404" element={<NotFound />} />
