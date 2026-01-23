@@ -27,10 +27,18 @@ import { useSiteStore } from './store/useSiteStore'
 
 function App() {
   const mode = useAppStore((state) => state.mode || 'dark')
+  const appThemePreset = useAppStore((state) => state.themePreset)
   const siteSettings = useSiteStore((state) => state.settings)
-  const themePreset = siteSettings?.theme_preset || useAppStore((state) => state.themePreset)
-  const primaryColor = siteSettings?.theme_primary_color || '#667eea'
-  const secondaryColor = siteSettings?.theme_secondary_color || '#764ba2'
+
+  const normalizeString = (value, fallback) => {
+    if (typeof value !== 'string') return fallback
+    const trimmed = value.trim()
+    return trimmed.length ? trimmed : fallback
+  }
+
+  const themePreset = normalizeString(siteSettings?.theme_preset, normalizeString(appThemePreset, 'ocean'))
+  const primaryColor = normalizeString(siteSettings?.theme_primary_color, '#667eea')
+  const secondaryColor = normalizeString(siteSettings?.theme_secondary_color, '#764ba2')
   const theme = useMemo(() => getTheme(mode, themePreset, primaryColor, secondaryColor), [mode, themePreset, primaryColor, secondaryColor])
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated)
   const user = useAuthStore((state) => state.user)
