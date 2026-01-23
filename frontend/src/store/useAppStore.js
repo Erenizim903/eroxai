@@ -2,7 +2,7 @@ import { create } from 'zustand'
 import { loadJSON, saveJSON } from '../utils/storage'
 import { defaultSettings, STORAGE_KEYS } from '../utils/constants'
 
-const initialState = loadJSON(STORAGE_KEYS.APP_STATE, {
+const defaultState = {
   mode: 'dark',
   file: null,
   ocrText: '',
@@ -13,7 +13,19 @@ const initialState = loadJSON(STORAGE_KEYS.APP_STATE, {
   history: [],
   settings: defaultSettings,
   themePreset: 'ocean',
-})
+}
+
+const storedState = loadJSON(STORAGE_KEYS.APP_STATE, {})
+const initialState = {
+  ...defaultState,
+  ...storedState,
+  mode: storedState?.mode || defaultState.mode,
+  themePreset: storedState?.themePreset || defaultState.themePreset,
+  settings: {
+    ...defaultState.settings,
+    ...(storedState?.settings || {}),
+  },
+}
 
 export const useAppStore = create((set, get) => ({
   ...initialState,

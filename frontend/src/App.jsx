@@ -26,7 +26,7 @@ import ChatBot from './components/common/ChatBot'
 import { useSiteStore } from './store/useSiteStore'
 
 function App() {
-  const mode = useAppStore((state) => state.mode)
+  const mode = useAppStore((state) => state.mode || 'dark')
   const siteSettings = useSiteStore((state) => state.settings)
   const themePreset = siteSettings?.theme_preset || useAppStore((state) => state.themePreset)
   const primaryColor = siteSettings?.theme_primary_color || '#667eea'
