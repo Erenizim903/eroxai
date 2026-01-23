@@ -105,6 +105,9 @@ const AdminTemplates = () => {
     await loadTemplates()
   }
 
+  const getTemplateName = (template) => template?.name || template?.name_tr || template?.name_en || 'Şablon'
+  const getTemplateDescription = (template) => template?.description || template?.description_tr || template?.description_en || 'Şablon'
+
   return (
     <Box>
       <TypewriterText
@@ -218,10 +221,10 @@ const AdminTemplates = () => {
                     >
                       <Stack spacing={1.5}>
                         <Typography variant="subtitle1" sx={{ color: 'white', fontWeight: 700 }}>
-                          {template.name}
+                          {getTemplateName(template)}
                         </Typography>
                         <Typography variant="body2" sx={{ color: alpha('#fff', 0.7) }}>
-                          {template.description || 'Şablon'}
+                          {getTemplateDescription(template)}
                         </Typography>
                         <Stack direction="row" spacing={1} alignItems="center">
                           <Chip label={template.template_type.toUpperCase()} size="small" />
@@ -238,7 +241,7 @@ const AdminTemplates = () => {
                 <>
                   <Divider sx={{ my: 3, borderColor: alpha('#667eea', 0.2) }} />
                   <Typography variant="subtitle1" sx={{ color: 'white', fontWeight: 700, mb: 2 }}>
-                    Alanlar: {selectedTemplate.name}
+                    Alanlar: {getTemplateName(selectedTemplate)}
                   </Typography>
                   <Stack spacing={2}>
                     <Box

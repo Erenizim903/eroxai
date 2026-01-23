@@ -42,6 +42,49 @@ const Navbar = () => {
   const brandName =
     siteSettings?.site_name === 'EroxAI' ? 'EroxAI Studio' : siteSettings?.site_name || 'EroxAI Studio'
 
+  const fallbackLabels = {
+    tr: {
+      'nav.home': 'Ana Sayfa',
+      'nav.templates': 'Şablonlar',
+      'nav.workflow': 'Akış',
+      'nav.workspace': 'Çalışma Alanı',
+      'nav.dashboard': 'Panel',
+      'nav.aiChat': 'AI Sohbet',
+      'nav.profile': 'Profil',
+      'nav.themes': 'Temalar',
+      'nav.admin': 'Admin',
+    },
+    en: {
+      'nav.home': 'Home',
+      'nav.templates': 'Templates',
+      'nav.workflow': 'Workflow',
+      'nav.workspace': 'Workspace',
+      'nav.dashboard': 'Dashboard',
+      'nav.aiChat': 'AI Chat',
+      'nav.profile': 'Profile',
+      'nav.themes': 'Themes',
+      'nav.admin': 'Admin',
+    },
+    ja: {
+      'nav.home': 'ホーム',
+      'nav.templates': 'テンプレート',
+      'nav.workflow': 'ワークフロー',
+      'nav.workspace': 'ワークスペース',
+      'nav.dashboard': 'ダッシュボード',
+      'nav.aiChat': 'AIチャット',
+      'nav.profile': 'プロフィール',
+      'nav.themes': 'テーマ',
+      'nav.admin': '管理',
+    },
+  }
+
+  const getLabel = (labelKey) => {
+    const translated = t(labelKey)
+    if (translated && translated !== labelKey) return translated
+    const lang = i18n.language || 'tr'
+    return fallbackLabels[lang]?.[labelKey] || fallbackLabels.tr[labelKey] || labelKey
+  }
+
   const toggleTheme = () => {
     const next = mode === 'dark' ? 'light' : 'dark'
     document.body.setAttribute('data-theme', next)
@@ -119,7 +162,7 @@ const Navbar = () => {
                   },
                 }}
               >
-                <ListItemText primary={t(item.labelKey)} sx={{ color: 'white' }} />
+                <ListItemText primary={getLabel(item.labelKey)} sx={{ color: 'white' }} />
               </ListItemButton>
             </ListItem>
           ))}
@@ -221,7 +264,7 @@ const Navbar = () => {
                       },
                     }}
                   >
-                    {t(item.labelKey)}
+                    {getLabel(item.labelKey)}
                   </Button>
                 ))}
             </Box>

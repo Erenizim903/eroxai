@@ -78,6 +78,9 @@ const Templates = () => {
     return items
   }, [templates, search, filterType, filterCategory, filterTag, sort])
 
+  const getTemplateName = (template) => template?.name || template?.name_tr || template?.name_en || 'Template'
+  const getTemplateDescription = (template) => template?.description || template?.description_tr || template?.description_en || ''
+
   const inputSx = useMemo(
     () => ({
       '& .MuiOutlinedInput-root': {
@@ -279,10 +282,11 @@ const Templates = () => {
                         ))}
                       </Stack>
                       <Typography variant="h5" sx={{ fontWeight: 700, color: 'white' }}>
-                        {item.name}
+                        {getTemplateName(item)}
                       </Typography>
                       <Typography variant="body1" sx={{ color: alpha('#fff', 0.7), lineHeight: 1.8 }}>
-                        {item.description || (i18n.language === 'tr' ? 'Şablon' : i18n.language === 'ja' ? 'テンプレート' : 'Template')}
+                        {getTemplateDescription(item) ||
+                          (i18n.language === 'tr' ? 'Şablon' : i18n.language === 'ja' ? 'テンプレート' : 'Template')}
                       </Typography>
                     </Stack>
                   </CardContent>

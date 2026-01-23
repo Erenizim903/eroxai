@@ -113,10 +113,10 @@ const Home = () => {
         {/* Hero Section - Ultra Modern */}
         <Box ref={heroRef} sx={{ position: 'relative', pt: { xs: 8, md: 16 }, pb: { xs: 12, md: 20 }, minHeight: '90vh', display: 'flex', alignItems: 'center' }}>
           <motion.div style={{ opacity, scale }}>
-            <Container maxWidth="lg">
+            <Container maxWidth="xl">
               <Grid container spacing={4} alignItems="center" justifyContent="center">
                 <Grid item xs={12} md={10} lg={8}>
-                  <Stack spacing={4} alignItems="center" textAlign="center">
+                  <Stack spacing={4} alignItems="center" textAlign="center" sx={{ width: '100%', maxWidth: 980, mx: 'auto' }}>
                     <motion.div
                       initial={{ opacity: 0, x: -50 }}
                       animate={{ opacity: 1, x: 0 }}
@@ -138,6 +138,7 @@ const Home = () => {
                         text={siteSettings?.hero_title || t('home.hero.title')}
                         variant="h1"
                         speed={30}
+                        disableTyping
                         sx={{
                           fontSize: { xs: '2rem', sm: '3rem', md: '4.5rem', lg: '5.5rem' },
                           fontWeight: 900,
