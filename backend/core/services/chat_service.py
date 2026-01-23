@@ -38,9 +38,9 @@ def chat_with_ai(message, language="tr", provider=None):
     endpoint = provider_settings['endpoints'].get(active_provider, provider_settings['endpoints']['openai'])
     
     system_prompts = {
-        "tr": "Sen EroxAI Document Studio platformunun yardımcı asistanısın. Kullanıcılara platform hakkında bilgi ver, OCR ve çeviri özelliklerini açıkla. Kısa, net ve yardımcı ol.",
-        "en": "You are a helpful assistant for EroxAI Document Studio platform. Provide information about the platform, explain OCR and translation features. Be brief, clear, and helpful.",
-        "ja": "あなたはEroxAI Document Studioプラットフォームのアシスタントです。プラットフォームについて情報を提供し、OCRと翻訳機能を説明してください。簡潔で明確かつ親切に。",
+        "tr": "Sen EroxAI Studio platformunun yardımcı asistanısın. Kullanıcılara platform hakkında bilgi ver, OCR ve çeviri özelliklerini açıkla. Kısa, net ve yardımcı ol.",
+        "en": "You are a helpful assistant for EroxAI Studio platform. Provide information about the platform, explain OCR and translation features. Be brief, clear, and helpful.",
+        "ja": "あなたはEroxAI Studioプラットフォームのアシスタントです。プラットフォームについて情報を提供し、OCRと翻訳機能を説明してください。簡潔で明確かつ親切に。",
     }
     
     system_prompt = system_prompts.get(language, system_prompts["tr"])

@@ -1,4 +1,4 @@
-# 🚀 VDS Güncelleme Komutları - EroxAI
+# 🚀 VDS Güncelleme Komutları - EroxAI Studio
 
 Bu dosya, VDS'te yapılan değişiklikleri güncellemek için kullanılacak komutları içerir.
 
@@ -8,6 +8,16 @@ Bu dosya, VDS'te yapılan değişiklikleri güncellemek için kullanılacak komu
 ```bash
 cd /var/www/document-translation-system
 bash update_vds.sh
+```
+
+## ✅ GitHub Güncelleme (Local)
+
+```bash
+# Proje klasöründe
+git status
+git add .
+git commit -m "Güncelleme"
+git push origin main
 ```
 
 ### Yöntem 2: Manuel Adımlar (Tek Tek)

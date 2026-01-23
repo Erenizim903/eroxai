@@ -26,6 +26,7 @@ urlpatterns = [
     path("admin/logs/", views.admin_logs),
     path("admin/premium-keys/", views.admin_premium_keys),
     path("admin/templates/<int:template_id>/fields/", views.admin_add_template_field),
+    path("admin/templates/<int:template_id>/delete/", views.admin_delete_template),
     path("admin/templates/<int:template_id>/fields/<int:field_id>/delete/", views.admin_delete_template_field),
     path("admin/templates/<int:template_id>/fields/<int:field_id>/update/", views.admin_update_template_field),
     path("admin/analytics/", views.admin_analytics),

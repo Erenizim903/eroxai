@@ -1,4 +1,4 @@
-# 🚀 EroxAI Güncelleme Rehberi
+# 🚀 EroxAI Studio Güncelleme Rehberi
 
 Bu rehber, Windows'tan VDS'e güncelleme yapmak için hazırlanmıştır.
 

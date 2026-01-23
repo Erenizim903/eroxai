@@ -7,12 +7,20 @@ import NotFound from './pages/NotFound'
 import { useAppStore } from './store/useAppStore'
 import Login from './pages/Login'
 import Register from './pages/Register'
+import ForgotPassword from './pages/ForgotPassword'
 import Dashboard from './pages/Dashboard'
 import ProtectedRoute from './components/common/ProtectedRoute'
-import AdminDashboard from './pages/AdminDashboard'
+import AdminLayout from './pages/admin/AdminLayout'
+import AdminOverview from './pages/admin/AdminOverview'
+import AdminTemplates from './pages/admin/AdminTemplates'
+import AdminContent from './pages/admin/AdminContent'
+import AdminUsers from './pages/admin/AdminUsers'
+import AdminLogs from './pages/admin/AdminLogs'
 import { useAuthStore } from './store/useAuthStore'
 import Profile from './pages/Profile'
 import Themes from './pages/Themes'
+import Templates from './pages/Templates'
+import Workflow from './pages/Workflow'
 import AIChat from './pages/AIChat'
 import ChatBot from './components/common/ChatBot'
 import { useSiteStore } from './store/useSiteStore'
@@ -45,6 +53,7 @@ function App() {
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route
           path="/profile"
           element={
@@ -61,6 +70,8 @@ function App() {
             </ProtectedRoute>
           }
         />
+        <Route path="/templates" element={<Templates />} />
+        <Route path="/workflow" element={<Workflow />} />
         <Route
           path="/dashboard"
           element={
@@ -78,13 +89,20 @@ function App() {
           }
         />
         <Route
-          path="/admin-panel"
+          path="/admin-panel/*"
           element={
             <ProtectedRoute requireAdmin>
-              <AdminDashboard />
+              <AdminLayout />
             </ProtectedRoute>
           }
-        />
+        >
+          <Route path="overview" element={<AdminOverview />} />
+          <Route path="templates" element={<AdminTemplates />} />
+          <Route path="content" element={<AdminContent />} />
+          <Route path="users" element={<AdminUsers />} />
+          <Route path="logs" element={<AdminLogs />} />
+          <Route path="*" element={<Navigate to="/admin-panel/overview" replace />} />
+        </Route>
         <Route path="/404" element={<NotFound />} />
         <Route path="*" element={<Navigate to="/404" replace />} />
       </Routes>

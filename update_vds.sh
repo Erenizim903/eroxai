@@ -1,10 +1,10 @@
 #!/bin/bash
-# EroxAI VDS Güncelleme Scripti
+# EroxAI Studio VDS Güncelleme Scripti
 # Kullanım: bash update_vds.sh
 
 set -e
 
-echo "🚀 EroxAI VDS Güncelleme Başlatılıyor..."
+echo "🚀 EroxAI Studio VDS Güncelleme Başlatılıyor..."
 
 # Proje dizinine git
 cd /var/www/document-translation-system

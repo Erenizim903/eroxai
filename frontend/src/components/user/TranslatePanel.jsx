@@ -4,9 +4,11 @@ import {
   Card,
   CardContent,
   MenuItem,
+  Paper,
   Stack,
   TextField,
   Typography,
+  alpha,
 } from '@mui/material'
 import SwapHorizIcon from '@mui/icons-material/SwapHoriz'
 import TranslateIcon from '@mui/icons-material/Translate'
@@ -31,6 +33,20 @@ const TranslatePanel = () => {
   const [inputText, setInputText] = useState(ocrText || '')
   const [isTranslating, setIsTranslating] = useState(false)
   const abortRef = useRef(null)
+
+  const inputSx = useMemo(
+    () => ({
+      '& .MuiOutlinedInput-root': {
+        background: alpha('#fff', 0.05),
+        color: 'white',
+        '& fieldset': { borderColor: alpha('#667eea', 0.3) },
+        '&:hover fieldset': { borderColor: alpha('#667eea', 0.5) },
+        '&.Mui-focused fieldset': { borderColor: '#667eea' },
+      },
+      '& .MuiInputLabel-root': { color: alpha('#fff', 0.7) },
+    }),
+    [],
+  )
 
   const sourceOptions = useMemo(() => languageOptions, [])
   const targetOptions = useMemo(() => languageOptions.filter((opt) => opt.value !== 'auto'), [])
@@ -102,80 +118,135 @@ const TranslatePanel = () => {
   }
 
   return (
-    <Card variant="outlined">
-      <CardContent>
-        <Stack spacing={2}>
-          <Stack direction={{ xs: 'column', md: 'row' }} spacing={2} alignItems="center">
-            <TextField
-              select
-              label="Kaynak"
-              value={sourceLanguage}
-              onChange={(event) => setSourceLanguage(event.target.value)}
-              sx={{ minWidth: 160 }}
-            >
-              {sourceOptions.map((option) => (
-                <MenuItem key={option.value} value={option.value}>
-                  {option.label}
-                </MenuItem>
-              ))}
-            </TextField>
-            <Button variant="outlined" onClick={handleSwap} startIcon={<SwapHorizIcon />}>
-              Değiştir
-            </Button>
-            <TextField
-              select
-              label="Hedef"
-              value={targetLanguage}
-              onChange={(event) => setTargetLanguage(event.target.value)}
-              sx={{ minWidth: 160 }}
-            >
-              {targetOptions.map((option) => (
-                <MenuItem key={option.value} value={option.value}>
-                  {option.label}
-                </MenuItem>
-              ))}
-            </TextField>
+    <Card
+      sx={{
+        borderRadius: 4,
+        background: alpha('#fff', 0.03),
+        border: `1px solid ${alpha('#667eea', 0.2)}`,
+        backdropFilter: 'blur(20px)',
+      }}
+    >
+      <CardContent sx={{ p: 4 }}>
+        <Stack spacing={3}>
+          <Stack direction="row" spacing={2} alignItems="center">
+            <TranslateIcon sx={{ fontSize: 38, color: '#667eea' }} />
+            <Typography variant="h5" sx={{ fontWeight: 700, color: 'white' }}>
+              Metin Çevirisi
+            </Typography>
           </Stack>
-          <TextField
-            label="Çevirilecek Metin"
-            multiline
-            minRows={6}
-            value={inputText}
-            onChange={(event) => setInputText(event.target.value)}
-            placeholder="OCR çıktısını buraya yapıştırabilir veya yeni metin yazabilirsiniz."
-          />
-          <Stack direction={{ xs: 'column', md: 'row' }} spacing={2}>
-            <Button
-              variant="contained"
-              onClick={handleTranslate}
-              startIcon={<TranslateIcon />}
-              disabled={isTranslating}
-            >
-              {isTranslating
-                ? 'Çeviriliyor...'
-                : settings.useCloudTranslate
-                  ? 'Cloud Çeviri Başlat'
-                  : 'Çeviri Başlat'}
-            </Button>
-            <Button variant="outlined" onClick={() => setInputText(ocrText || '')}>
-              OCR Metnini Kullan
-            </Button>
-            <Button
-              variant="outlined"
-              disabled={!translationText}
-              onClick={() => downloadText('translation.txt', translationText)}
-            >
-              Çeviriyi İndir
-            </Button>
-          </Stack>
-          <Typography variant="subtitle2">Çeviri Sonucu</Typography>
-          <TextField
-            multiline
-            minRows={6}
-            value={translationText}
-            onChange={(event) => setTranslation(event.target.value)}
-            placeholder="Çeviri sonucu burada görünür..."
-          />
+
+          <Paper
+            sx={{
+              p: 3,
+              background: alpha('#667eea', 0.1),
+              border: `1px solid ${alpha('#667eea', 0.3)}`,
+              borderRadius: 3,
+            }}
+          >
+            <Stack spacing={2}>
+              <Stack direction={{ xs: 'column', md: 'row' }} spacing={2} alignItems="center">
+                <TextField
+                  select
+                  label="Kaynak"
+                  value={sourceLanguage}
+                  onChange={(event) => setSourceLanguage(event.target.value)}
+                  sx={{ minWidth: 160, ...inputSx }}
+                >
+                  {sourceOptions.map((option) => (
+                    <MenuItem key={option.value} value={option.value}>
+                      {option.label}
+                    </MenuItem>
+                  ))}
+                </TextField>
+                <Button
+                  variant="outlined"
+                  onClick={handleSwap}
+                  startIcon={<SwapHorizIcon />}
+                  sx={{
+                    borderColor: alpha('#667eea', 0.5),
+                    color: 'white',
+                    '&:hover': { borderColor: '#667eea', background: alpha('#667eea', 0.1) },
+                  }}
+                >
+                  Değiştir
+                </Button>
+                <TextField
+                  select
+                  label="Hedef"
+                  value={targetLanguage}
+                  onChange={(event) => setTargetLanguage(event.target.value)}
+                  sx={{ minWidth: 160, ...inputSx }}
+                >
+                  {targetOptions.map((option) => (
+                    <MenuItem key={option.value} value={option.value}>
+                      {option.label}
+                    </MenuItem>
+                  ))}
+                </TextField>
+              </Stack>
+              <TextField
+                label="Çevirilecek Metin"
+                multiline
+                minRows={6}
+                value={inputText}
+                onChange={(event) => setInputText(event.target.value)}
+                placeholder="OCR çıktısını buraya yapıştırabilir veya yeni metin yazabilirsiniz."
+                sx={inputSx}
+              />
+              <Stack direction={{ xs: 'column', md: 'row' }} spacing={2}>
+                <Button
+                  variant="contained"
+                  onClick={handleTranslate}
+                  startIcon={<TranslateIcon />}
+                  disabled={isTranslating}
+                  sx={{
+                    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                    fontWeight: 700,
+                  }}
+                >
+                  {isTranslating
+                    ? 'Çeviriliyor...'
+                    : settings.useCloudTranslate
+                      ? 'Cloud Çeviri Başlat'
+                      : 'Çeviri Başlat'}
+                </Button>
+                <Button
+                  variant="outlined"
+                  onClick={() => setInputText(ocrText || '')}
+                  sx={{
+                    borderColor: alpha('#667eea', 0.5),
+                    color: 'white',
+                    '&:hover': { borderColor: '#667eea', background: alpha('#667eea', 0.1) },
+                  }}
+                >
+                  OCR Metnini Kullan
+                </Button>
+                <Button
+                  variant="outlined"
+                  disabled={!translationText}
+                  onClick={() => downloadText('translation.txt', translationText)}
+                  sx={{
+                    borderColor: alpha('#667eea', 0.5),
+                    color: 'white',
+                    '&:hover': { borderColor: '#667eea', background: alpha('#667eea', 0.1) },
+                  }}
+                >
+                  Çeviriyi İndir
+                </Button>
+              </Stack>
+              <Typography variant="subtitle2" sx={{ color: alpha('#fff', 0.7) }}>
+                Çeviri Sonucu
+              </Typography>
+              <TextField
+                multiline
+                minRows={6}
+                value={translationText}
+                onChange={(event) => setTranslation(event.target.value)}
+                placeholder="Çeviri sonucu burada görünür..."
+                sx={inputSx}
+              />
+            </Stack>
+          </Paper>
         </Stack>
       </CardContent>
     </Card>

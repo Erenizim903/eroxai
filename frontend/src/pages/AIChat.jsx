@@ -153,10 +153,10 @@ const AIChat = () => {
             />
             <Typography variant="h6" sx={{ color: alpha('#fff', 0.7), mb: 4, maxWidth: 600, mx: 'auto' }}>
               {i18n.language === 'tr'
-                ? 'AI Chat özelliğini kullanmak için premium key girmeniz gerekmektedir.'
+                ? 'AI Chat özelliğini kullanmak için premium üyelik gereklidir.'
                 : i18n.language === 'ja'
-                ? 'AIチャット機能を使用するには、プレミアムキーを入力する必要があります。'
-                : 'You need to enter a premium key to use the AI Chat feature.'}
+                ? 'AIチャット機能を使用するにはプレミアム会員が必要です。'
+                : 'Premium membership is required to use AI Chat.'}
             </Typography>
           </motion.div>
         </Container>
@@ -315,7 +315,7 @@ const AIChat = () => {
                               fontSize: { xs: '0.7rem', md: '0.75rem' },
                             }}
                           >
-                            {msg.role === 'user' ? (user?.username || 'You') : 'EroxAI'}
+                            {msg.role === 'user' ? (user?.username || 'You') : 'EroxAI Studio'}
                           </Typography>
                           <Box
                             className="message-actions"
@@ -516,10 +516,10 @@ const AIChat = () => {
               }}
             >
               {i18n.language === 'tr'
-                ? 'EroxAI yanıtları hata içerebilir. Önemli bilgileri doğrulayın.'
+                ? 'EroxAI Studio yanıtları hata içerebilir. Önemli bilgileri doğrulayın.'
                 : i18n.language === 'ja'
-                ? 'EroxAIの回答には誤りが含まれる可能性があります。重要な情報を確認してください。'
-                : 'EroxAI may produce inaccurate information. Verify important information.'}
+                ? 'EroxAI Studioの回答には誤りが含まれる可能性があります。重要な情報を確認してください。'
+                : 'EroxAI Studio may produce inaccurate information. Verify important information.'}
             </Typography>
           </Container>
         </Box>

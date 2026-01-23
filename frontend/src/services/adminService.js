@@ -50,6 +50,11 @@ export const updateSiteSettings = async (payload) => {
   return data
 }
 
+export const deleteTemplate = async (templateId) => {
+  const { data } = await api.delete(`/admin/templates/${templateId}/delete/`)
+  return data
+}
+
 export const fetchAdminAnalytics = async () => {
   const { data } = await api.get('/admin/analytics/')
   return data

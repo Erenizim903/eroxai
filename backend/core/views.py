@@ -476,6 +476,14 @@ def admin_add_template_field(request, template_id):
 
 @api_view(["DELETE"])
 @permission_classes([IsAuthenticated, IsAdminUser])
+def admin_delete_template(request, template_id):
+    template = get_object_or_404(DocumentTemplate, id=template_id)
+    template.delete()
+    return Response({"message": "Template deleted."})
+
+
+@api_view(["DELETE"])
+@permission_classes([IsAuthenticated, IsAdminUser])
 def admin_delete_template_field(request, template_id, field_id):
     field = get_object_or_404(TemplateField, id=field_id, template_id=template_id)
     field.delete()

@@ -449,7 +449,7 @@ const AdminDashboard = () => {
                             <Avatar sx={{ background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' }}>AD</Avatar>
                             <Box>
                               <Typography fontWeight={700} sx={{ background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
-                                {siteSettings.site_name || 'EroxAI'}
+                                {siteSettings.site_name === 'EroxAI' ? 'EroxAI Studio' : siteSettings.site_name || 'EroxAI Studio'}
                               </Typography>
                               <Typography variant="caption" color="text.secondary">
                                 Admin Panel

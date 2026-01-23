@@ -105,7 +105,7 @@ class TemplateFillSerializer(serializers.ModelSerializer):
 class TemplateFieldSerializer(serializers.ModelSerializer):
     class Meta:
         model = TemplateField
-        fields = ("id", "key", "label", "field_type", "required", "mapping")
+        fields = ("id", "key", "label", "field_type", "required", "mapping", "order")
 
 
 class SiteSettingsSerializer(serializers.ModelSerializer):

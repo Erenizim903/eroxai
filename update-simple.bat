@@ -1,6 +1,6 @@
 @echo off
 chcp 65001 >nul
-echo 🚀 EroxAI Güncelleme Başlatılıyor...
+echo 🚀 EroxAI Studio Güncelleme Başlatılıyor...
 echo.
 
 cd /d "%~dp0"

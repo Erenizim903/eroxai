@@ -1,5 +1,5 @@
 import { useEffect } from 'react'
-import { Box, Container, Grid, Tab, Tabs, Typography } from '@mui/material'
+import { Box, Card, CardContent, Container, Grid, Tab, Tabs, Typography, alpha } from '@mui/material'
 import { useTranslation } from 'react-i18next'
 import { useSearchParams } from 'react-router-dom'
 import Navbar from '../components/common/Navbar'
@@ -29,26 +29,52 @@ const Workspace = () => {
   }
 
   return (
-    <Box>
+    <Box sx={{ minHeight: '100vh', background: 'linear-gradient(180deg, #0a0a0a 0%, #1a1a2e 100%)' }}>
       <Navbar />
-      <Container maxWidth="lg" sx={{ py: 5 }}>
-        <Typography variant="h3" sx={{ mb: 1 }}>
-          {t('workspace.title')}
-        </Typography>
-        <Typography variant="body1" color="text.secondary" sx={{ mb: 4 }}>
-          {t('workspace.subtitle')}
-        </Typography>
-
+      <Container maxWidth="lg" sx={{ py: { xs: 6, md: 10 } }}>
+        <Box sx={{ mb: 5 }}>
+          <Typography variant="h3" sx={{ mb: 1, fontWeight: 800, color: 'white' }}>
+            {t('workspace.title')}
+          </Typography>
+          <Typography variant="body1" sx={{ color: alpha('#fff', 0.7) }}>
+            {t('workspace.subtitle')}
+          </Typography>
+        </Box>
         <Grid container spacing={3}>
           <Grid item xs={12} md={4}>
             <UploadPanel />
           </Grid>
           <Grid item xs={12} md={8}>
-            <Tabs value={safeTab} onChange={handleTabChange} sx={{ mb: 3 }}>
-              {tabKeys.map((tab) => (
-                <Tab key={tab} label={t(`workspace.tabs.${tab}`)} value={tab} />
-              ))}
-            </Tabs>
+            <Card
+              sx={{
+                mb: 3,
+                borderRadius: 4,
+                background: alpha('#fff', 0.03),
+                border: `1px solid ${alpha('#667eea', 0.2)}`,
+                backdropFilter: 'blur(20px)',
+              }}
+            >
+              <CardContent>
+                <Tabs
+                  value={safeTab}
+                  onChange={handleTabChange}
+                  sx={{
+                    '& .MuiTab-root': {
+                      color: alpha('#fff', 0.7),
+                      fontWeight: 600,
+                      '&.Mui-selected': { color: '#667eea' },
+                    },
+                    '& .MuiTabs-indicator': {
+                      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                    },
+                  }}
+                >
+                  {tabKeys.map((tab) => (
+                    <Tab key={tab} label={t(`workspace.tabs.${tab}`)} value={tab} />
+                  ))}
+                </Tabs>
+              </CardContent>
+            </Card>
             <Box>
               {safeTab === 'ocr' && <OcrPanel />}
               {safeTab === 'translate' && <TranslatePanel />}

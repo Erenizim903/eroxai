@@ -1,6 +1,8 @@
 {
   "nav": {
     "home": "Home",
+    "templates": "Templates",
+    "workflow": "Workflow",
     "workspace": "Workspace",
     "dashboard": "Dashboard",
     "aiChat": "AI Chat",
@@ -10,7 +12,7 @@
   },
   "home": {
     "hero": {
-      "title": "Document Translation Studio",
+      "title": "EroxAI Studio",
       "subtitle": "Manage OCR and translation in one workspace and export results instantly.",
       "ctaPrimary": "Get Started",
       "ctaSecondary": "Learn More",
@@ -73,6 +75,6 @@
   },
   "footer": {
     "tagline": "Browser-based OCR + Translation platform.",
-    "powered": "Powered by EroxAI."
+    "powered": "Powered by EroxAI Studio."
   }
 }

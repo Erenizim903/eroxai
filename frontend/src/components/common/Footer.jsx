@@ -40,6 +40,8 @@ const Footer = () => {
   const { t } = useTranslation()
   const siteSettings = useSiteStore((state) => state.settings)
   const loadSettings = useSiteStore((state) => state.loadSettings)
+  const brandName =
+    siteSettings?.site_name === 'EroxAI' ? 'EroxAI Studio' : siteSettings?.site_name || 'EroxAI Studio'
 
   useEffect(() => {
     loadSettings()
@@ -74,7 +76,7 @@ const Footer = () => {
           <Grid item xs={12} md={4}>
             <Stack spacing={3}>
               <Typography variant="h5" sx={{ fontWeight: 800, color: 'white', mb: 1 }}>
-                {siteSettings?.site_name ? (siteSettings.site_name === 'EroxAI' ? 'EroxAI Studio' : siteSettings.site_name) : 'EroxAI Studio'}
+                {brandName}
               </Typography>
               <Typography variant="body2" sx={{ color: alpha('#fff', 0.7), lineHeight: 1.8 }}>
                 {t('footer.tagline')}

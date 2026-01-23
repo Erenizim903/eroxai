@@ -3,7 +3,7 @@ chcp 65001 >nul
 setlocal enabledelayedexpansion
 
 echo ========================================
-echo   🌐 EroxAI VDS Güncelleme
+echo   🌐 EroxAI Studio VDS Güncelleme
 echo ========================================
 echo.
 

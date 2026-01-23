@@ -30,7 +30,7 @@ const ChatBot = () => {
   const [messages, setMessages] = useState([
     {
       role: 'assistant',
-      content: i18n.language === 'tr' 
+      content: i18n.language === 'tr'
         ? 'Merhaba! EroxAI Studio hakkında size nasıl yardımcı olabilirim?'
         : i18n.language === 'ja'
         ? 'こんにちは！EroxAI Studioについて、どのようにお手伝いできますか？'
@@ -59,7 +59,7 @@ const ChatBot = () => {
           ? '🔒 Bu özellik premium üyeler için! Premium key girin.'
           : i18n.language === 'ja'
           ? '🔒 この機能はプレミアムメンバー専用です！プレミアムキーを入力してください。'
-          : '🔒 This feature is for premium members! Enter a premium key.',
+          : '🔒 This feature is for premium members.',
         { variant: 'warning' }
       )
       return
@@ -96,7 +96,7 @@ const ChatBot = () => {
           ? '🔒 AI Chatbot premium üyeler için! Premium key girin.'
           : i18n.language === 'ja'
           ? '🔒 AIチャットボットはプレミアムメンバー専用です！プレミアムキーを入力してください。'
-          : '🔒 AI Chatbot is for premium members! Enter a premium key.',
+          : '🔒 AI Chatbot is for premium members.',
         { variant: 'warning' }
       )
       return

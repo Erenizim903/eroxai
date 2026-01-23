@@ -3,7 +3,7 @@ chcp 65001 >nul
 setlocal enabledelayedexpansion
 
 echo ========================================
-echo   🚀 EroxAI Güncelleme Scripti
+echo   🚀 EroxAI Studio Güncelleme Scripti
 echo ========================================
 echo.
 

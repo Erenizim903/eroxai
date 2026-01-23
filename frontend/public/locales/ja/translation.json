@@ -1,6 +1,8 @@
 {
   "nav": {
     "home": "ホーム",
+    "templates": "テンプレート",
+    "workflow": "ワークフロー",
     "workspace": "ワークスペース",
     "dashboard": "ダッシュボード",
     "aiChat": "AIチャット",
@@ -10,7 +12,7 @@
   },
   "home": {
     "hero": {
-      "title": "ドキュメント翻訳スタジオ",
+      "title": "EroxAI Studio",
       "subtitle": "OCRと翻訳を一つの画面で管理し、結果をすぐに出力。",
       "ctaPrimary": "今すぐ始める",
       "ctaSecondary": "詳しく見る",
@@ -73,6 +75,6 @@
   },
   "footer": {
     "tagline": "ブラウザ完結のOCR + 翻訳プラットフォーム。",
-    "powered": "EroxAI 提供"
+    "powered": "EroxAI Studio 提供"
   }
 }

@@ -1,4 +1,4 @@
-import { AppBar, Box, Button, IconButton, Stack, Toolbar, Typography, Drawer, List, ListItem, ListItemButton, ListItemText, Divider } from '@mui/material'
+import { AppBar, Box, Button, Chip, IconButton, Stack, Toolbar, Typography, Drawer, List, ListItem, ListItemButton, ListItemText, Divider, alpha } from '@mui/material'
 import DarkModeIcon from '@mui/icons-material/DarkMode'
 import LightModeIcon from '@mui/icons-material/LightMode'
 import TranslateIcon from '@mui/icons-material/Translate'
@@ -13,11 +13,13 @@ import { useEffect, useState } from 'react'
 
 const navItems = [
   { labelKey: 'nav.home', to: '/' },
+  { labelKey: 'nav.templates', to: '/templates' },
+  { labelKey: 'nav.workflow', to: '/workflow' },
   { labelKey: 'nav.dashboard', to: '/dashboard' },
   { labelKey: 'nav.aiChat', to: '/ai-chat' },
   { labelKey: 'nav.profile', to: '/profile' },
   { labelKey: 'nav.themes', to: '/themes' },
-  { labelKey: 'nav.admin', to: '/admin-panel' },
+  { labelKey: 'nav.admin', to: '/admin-panel/overview' },
 ]
 
 const languageOptions = [
@@ -37,6 +39,8 @@ const Navbar = () => {
   const loadSettings = useSiteStore((state) => state.loadSettings)
   const location = useLocation()
   const [mobileOpen, setMobileOpen] = useState(false)
+  const brandName =
+    siteSettings?.site_name === 'EroxAI' ? 'EroxAI Studio' : siteSettings?.site_name || 'EroxAI Studio'
 
   const toggleTheme = () => {
     const next = mode === 'dark' ? 'light' : 'dark'
@@ -57,7 +61,16 @@ const Navbar = () => {
   }
 
   const drawer = (
-    <Box sx={{ width: 280, background: 'linear-gradient(180deg, #0a0a0a 0%, #1a1a2e 100%)', height: '100%', p: 2 }}>
+    <Box
+      sx={{
+        width: 280,
+        background: 'linear-gradient(180deg, #0a0a0a 0%, #1a1a2e 100%)',
+        height: '100%',
+        p: 2,
+        display: 'flex',
+        flexDirection: 'column',
+      }}
+    >
       <Stack direction="row" spacing={2} alignItems="center" justifyContent="space-between" sx={{ mb: 3 }}>
         <Stack direction="row" spacing={1.5} alignItems="center">
           {siteSettings?.logo ? (
@@ -66,7 +79,7 @@ const Navbar = () => {
             <TranslateIcon color="primary" />
           )}
           <Typography variant="h6" fontWeight={700} sx={{ color: 'white' }}>
-            {siteSettings?.site_name || 'EroxAI'}
+            {brandName}
           </Typography>
         </Stack>
         <IconButton onClick={handleDrawerToggle} sx={{ color: 'white' }}>
@@ -76,7 +89,7 @@ const Navbar = () => {
       <Divider sx={{ borderColor: 'rgba(255,255,255,0.1)', mb: 2 }} />
       <List>
         {navItems
-          .filter((item) => (item.to === '/admin-panel' ? user?.is_staff : true))
+          .filter((item) => (item.to.startsWith('/admin-panel') ? user?.is_staff : true))
           .map((item) => (
             <ListItem key={item.to} disablePadding sx={{ mb: 1 }}>
               <ListItemButton
@@ -131,6 +144,20 @@ const Navbar = () => {
         </Stack>
       </Stack>
       <Box sx={{ mt: 'auto', pt: 3, px: 2 }}>
+        {isAuthenticated && (
+          <Stack spacing={1} sx={{ mb: 2 }}>
+            <Chip
+              label={user?.username || 'User'}
+              sx={{ background: alpha('#667eea', 0.2), color: '#fff', fontWeight: 600 }}
+            />
+            {user?.profile?.is_premium && (
+              <Chip
+                label="Premium"
+                sx={{ background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', color: '#fff', fontWeight: 700 }}
+              />
+            )}
+          </Stack>
+        )}
         {isAuthenticated ? (
           <Button variant="outlined" fullWidth onClick={logout} sx={{ borderColor: 'rgba(255,255,255,0.2)', color: 'white' }}>
             Çıkış
@@ -146,7 +173,16 @@ const Navbar = () => {
 
   return (
     <>
-      <AppBar position="sticky" color="transparent" elevation={0} sx={{ background: 'rgba(10, 10, 10, 0.8)', backdropFilter: 'blur(20px)' }}>
+      <AppBar
+        position="sticky"
+        color="transparent"
+        elevation={0}
+        sx={{
+          background: 'rgba(10, 10, 10, 0.8)',
+          backdropFilter: 'blur(20px)',
+          borderBottom: `1px solid ${alpha('#667eea', 0.15)}`,
+        }}
+      >
         <Toolbar sx={{ py: 1.5, justifyContent: 'space-between' }}>
           <Stack direction="row" spacing={1.5} alignItems="center">
             {siteSettings?.logo ? (
@@ -155,21 +191,29 @@ const Navbar = () => {
               <TranslateIcon color="primary" />
             )}
             <Typography variant="h6" fontWeight={700} sx={{ display: { xs: 'none', sm: 'block' } }}>
-              {siteSettings?.site_name || 'EroxAI'}
+              {brandName}
             </Typography>
           </Stack>
           <Stack direction="row" spacing={1} alignItems="center" sx={{ flexWrap: 'wrap', gap: 1 }}>
             {/* Desktop Menu */}
             <Box sx={{ display: { xs: 'none', md: 'flex' }, gap: 1 }}>
               {navItems
-                .filter((item) => (item.to === '/admin-panel' ? user?.is_staff : true))
+                .filter((item) => (item.to.startsWith('/admin-panel') ? user?.is_staff : true))
                 .map((item) => (
                   <Button
                     key={item.to}
                     component={RouterLink}
                     to={item.to}
-                    color={location.pathname === item.to ? 'primary' : 'inherit'}
-                    sx={{ fontSize: '0.875rem', px: 2 }}
+                    sx={{
+                      fontSize: '0.875rem',
+                      px: 2,
+                      borderRadius: 999,
+                      color: location.pathname === item.to ? 'white' : alpha('#fff', 0.8),
+                      background: location.pathname === item.to ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' : 'transparent',
+                      '&:hover': {
+                        background: location.pathname === item.to ? 'linear-gradient(135deg, #764ba2 0%, #667eea 100%)' : alpha('#667eea', 0.15),
+                      },
+                    }}
                   >
                     {t(item.labelKey)}
                   </Button>
@@ -182,15 +226,25 @@ const Navbar = () => {
                   size="small"
                   variant={i18n.language === option.code ? 'contained' : 'text'}
                   onClick={() => setLanguage(option.code)}
+                  sx={{
+                    borderRadius: 999,
+                    color: i18n.language === option.code ? 'white' : alpha('#fff', 0.7),
+                  }}
                 >
                   {option.label}
                 </Button>
               ))}
             </Box>
             {isAuthenticated ? (
-              <Button variant="outlined" onClick={logout} sx={{ display: { xs: 'none', md: 'flex' } }}>
-                Çıkış
-              </Button>
+              <Stack direction="row" spacing={1} alignItems="center" sx={{ display: { xs: 'none', md: 'flex' } }}>
+                <Chip
+                  label={user?.username || 'User'}
+                  sx={{ background: alpha('#667eea', 0.2), color: '#fff', fontWeight: 600 }}
+                />
+                <Button variant="outlined" onClick={logout}>
+                  Çıkış
+                </Button>
+              </Stack>
             ) : (
               <Button component={RouterLink} to="/login" variant="outlined" sx={{ display: { xs: 'none', md: 'flex' } }}>
                 Giriş
