@@ -38,8 +38,6 @@ import PendingIcon from '@mui/icons-material/Pending'
 import VerifiedUserIcon from '@mui/icons-material/VerifiedUser'
 import StarIcon from '@mui/icons-material/Star'
 import VpnKeyIcon from '@mui/icons-material/VpnKey'
-import ChevronLeftIcon from '@mui/icons-material/ChevronLeft'
-import ChevronRightIcon from '@mui/icons-material/ChevronRight'
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline'
 import ViewWeekIcon from '@mui/icons-material/ViewWeek'
 
@@ -60,7 +58,6 @@ const Dashboard = () => {
   const loadMe = useAuthStore((state) => state.loadMe)
   const [activeTab, setActiveTab] = useState(0)
   const [showKeyBanner, setShowKeyBanner] = useState(false)
-  const [isMenuCollapsed, setIsMenuCollapsed] = useState(false)
   const [templates, setTemplates] = useState([])
   const [selectedTemplate, setSelectedTemplate] = useState(null)
   const [inputData, setInputData] = useState({})
@@ -523,105 +520,64 @@ const Dashboard = () => {
         )}
 
         <Grid container spacing={3}>
-          <Grid item xs={12} md={3}>
-            <Card
-              sx={{
-                position: 'sticky',
-                top: 96,
-                p: isMenuCollapsed ? 1.5 : 2,
-                borderRadius: 4,
-                background: alpha('#fff', 0.03),
-                border: `1px solid ${alpha('#667eea', 0.2)}`,
-                backdropFilter: 'blur(20px)',
-                transition: 'all 0.3s ease',
-              }}
-            >
-              <Stack spacing={1.5} sx={{ minHeight: { md: '60vh' } }}>
-                <Stack direction="row" spacing={1} alignItems="center" justifyContent="space-between" sx={{ px: 0.5 }}>
-                  {!isMenuCollapsed && (
-                    <Typography variant="subtitle2" sx={{ color: alpha('#fff', 0.7), fontWeight: 700 }}>
-                      Menüler
-                    </Typography>
-                  )}
-                  <Tooltip title={isMenuCollapsed ? 'Menüyü genişlet' : 'Menüyü daralt'}>
-                    <IconButton
-                      onClick={() => setIsMenuCollapsed((prev) => !prev)}
-                      sx={{
-                        color: alpha('#fff', 0.7),
-                        border: `1px solid ${alpha('#667eea', 0.2)}`,
-                        borderRadius: 2,
-                        width: 36,
-                        height: 36,
-                        '&:hover': { color: 'white', background: alpha('#667eea', 0.1) },
-                      }}
-                    >
-                      {isMenuCollapsed ? <ChevronRightIcon /> : <ChevronLeftIcon />}
-                    </IconButton>
-                  </Tooltip>
-                </Stack>
-                {tabItems
-                  .filter((item) => item.key !== 'premium')
-                  .map((item, index) => (
-                    <motion.div key={item.key} whileHover={{ x: 8 }} whileTap={{ scale: 0.98 }}>
-                      <Tooltip title={isMenuCollapsed ? item.label : ''} placement="right">
-                        <Button
-                          fullWidth
-                          onClick={() => setActiveTab(index)}
-                          startIcon={item.icon}
-                          sx={{
-                            justifyContent: isMenuCollapsed ? 'center' : 'flex-start',
-                            color: activeKey === item.key ? 'white' : alpha('#fff', 0.7),
-                            background: activeKey === item.key ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' : 'transparent',
-                            borderRadius: 3,
-                            py: 1.2,
-                            fontWeight: 600,
-                            minHeight: 44,
-                            '& .MuiButton-startIcon': {
-                              marginRight: isMenuCollapsed ? 0 : undefined,
-                            },
-                            '&:hover': {
-                              background: activeKey === item.key ? 'linear-gradient(135deg, #764ba2 0%, #667eea 100%)' : alpha('#667eea', 0.12),
-                            },
-                          }}
-                        >
-                          {!isMenuCollapsed && item.label}
-                        </Button>
-                      </Tooltip>
-                    </motion.div>
-                  ))}
-                <Box sx={{ flexGrow: 1 }} />
-                {tabItems.some((item) => item.key === 'premium') && (
-                  <motion.div whileHover={{ x: 8 }} whileTap={{ scale: 0.98 }}>
-                    <Tooltip title={isMenuCollapsed ? (i18n.language === 'tr' ? 'Premium Key' : i18n.language === 'ja' ? 'プレミアムキー' : 'Premium Key') : ''} placement="right">
+          <Grid item xs={12}>
+            <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
+              <Card
+                sx={{
+                  p: 1.5,
+                  borderRadius: 3,
+                  background: alpha('#fff', 0.03),
+                  border: `1px solid ${alpha('#667eea', 0.2)}`,
+                  backdropFilter: 'blur(20px)',
+                }}
+              >
+                <Stack direction="row" spacing={1} alignItems="center" flexWrap="wrap" justifyContent="flex-end">
+                  {tabItems
+                    .filter((item) => item.key !== 'premium')
+                    .map((item, index) => (
                       <Button
-                        fullWidth
-                        onClick={() => setActiveTab(tabItems.findIndex((item) => item.key === 'premium'))}
-                        startIcon={<VpnKeyIcon />}
+                        key={item.key}
+                        onClick={() => setActiveTab(index)}
+                        startIcon={item.icon}
                         sx={{
-                          justifyContent: isMenuCollapsed ? 'center' : 'flex-start',
-                          color: activeKey === 'premium' ? 'white' : alpha('#fff', 0.7),
-                          background: activeKey === 'premium' ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' : 'transparent',
+                          color: activeKey === item.key ? 'white' : alpha('#fff', 0.7),
+                          background: activeKey === item.key ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' : 'transparent',
                           borderRadius: 3,
-                          py: 1.2,
+                          py: 0.9,
                           fontWeight: 600,
-                          minHeight: 44,
-                          '& .MuiButton-startIcon': {
-                            marginRight: isMenuCollapsed ? 0 : undefined,
-                          },
+                          minHeight: 40,
                           '&:hover': {
-                            background: activeKey === 'premium' ? 'linear-gradient(135deg, #764ba2 0%, #667eea 100%)' : alpha('#667eea', 0.12),
+                            background: activeKey === item.key ? 'linear-gradient(135deg, #764ba2 0%, #667eea 100%)' : alpha('#667eea', 0.12),
                           },
                         }}
                       >
-                        {!isMenuCollapsed && (i18n.language === 'tr' ? 'Premium Key' : i18n.language === 'ja' ? 'プレミアムキー' : 'Premium Key')}
+                        {item.label}
                       </Button>
-                    </Tooltip>
-                  </motion.div>
-                )}
-              </Stack>
-            </Card>
+                    ))}
+                  {tabItems.some((item) => item.key === 'premium') && (
+                    <Button
+                      onClick={() => setActiveTab(tabItems.findIndex((item) => item.key === 'premium'))}
+                      startIcon={<VpnKeyIcon />}
+                      sx={{
+                        color: activeKey === 'premium' ? 'white' : alpha('#fff', 0.7),
+                        background: activeKey === 'premium' ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' : 'transparent',
+                        borderRadius: 3,
+                        py: 0.9,
+                        fontWeight: 600,
+                        minHeight: 40,
+                        '&:hover': {
+                          background: activeKey === 'premium' ? 'linear-gradient(135deg, #764ba2 0%, #667eea 100%)' : alpha('#667eea', 0.12),
+                        },
+                      }}
+                    >
+                      {i18n.language === 'tr' ? 'Premium Key' : i18n.language === 'ja' ? 'プレミアムキー' : 'Premium Key'}
+                    </Button>
+                  )}
+                </Stack>
+              </Card>
+            </Box>
           </Grid>
-          <Grid item xs={12} md={9}>
+          <Grid item xs={12} md={12}>
             {activeKey === 'templates' && (
               <FloatingCard delay={0}>
                 <Card
@@ -678,10 +634,13 @@ const Dashboard = () => {
                                 >
                                   <Stack spacing={2}>
                                     <Typography variant="h6" sx={{ fontWeight: 700, color: 'white' }}>
-                                      {template.name}
+                                      {template.name || template.name_tr || template.name_en || 'Şablon'}
                                     </Typography>
                                     <Typography variant="body2" sx={{ color: alpha('#fff', 0.7) }}>
-                                      {template.description || (i18n.language === 'tr' ? 'Şablon' : i18n.language === 'ja' ? 'テンプレート' : 'Template')}
+                                      {template.description ||
+                                        template.description_tr ||
+                                        template.description_en ||
+                                        (i18n.language === 'tr' ? 'Şablon' : i18n.language === 'ja' ? 'テンプレート' : 'Template')}
                                     </Typography>
                                     <Chip
                                       label={template.template_type.toUpperCase()}
