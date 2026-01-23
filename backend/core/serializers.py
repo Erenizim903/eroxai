@@ -154,14 +154,18 @@ class ApiKeysSerializer(serializers.ModelSerializer):
             "google_vision_api_key",
             "deepseek_api_key",
             "blackbox_api_key",
+            "blackbox_repo_url",
         )
 
     def to_representation(self, instance):
         data = super().to_representation(instance)
         payload = {}
         for key, value in data.items():
-            payload[key] = ""
-            payload[f"{key}_set"] = bool(value)
+            if key == "blackbox_repo_url":
+                payload[key] = value or ""
+            else:
+                payload[key] = ""
+                payload[f"{key}_set"] = bool(value)
         return payload
 
 

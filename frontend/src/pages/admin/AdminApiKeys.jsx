@@ -9,12 +9,14 @@ const AdminApiKeys = () => {
     google_vision_api_key: '',
     deepseek_api_key: '',
     blackbox_api_key: '',
+    blackbox_repo_url: '',
   })
   const [status, setStatus] = useState({
     openai_api_key_set: false,
     google_vision_api_key_set: false,
     deepseek_api_key_set: false,
     blackbox_api_key_set: false,
+    blackbox_repo_url: '',
   })
   const [saving, setSaving] = useState(false)
   const inputSx = useMemo(
@@ -39,6 +41,7 @@ const AdminApiKeys = () => {
       google_vision_api_key: '',
       deepseek_api_key: '',
       blackbox_api_key: '',
+      blackbox_repo_url: data.blackbox_repo_url || '',
     })
   }
 
@@ -50,7 +53,10 @@ const AdminApiKeys = () => {
     setSaving(true)
     try {
       const payload = Object.fromEntries(
-        Object.entries(form).filter(([, value]) => typeof value === 'string' && value.trim()),
+        Object.entries(form).filter(([key, value]) => {
+          if (key === 'blackbox_repo_url') return typeof value === 'string'
+          return typeof value === 'string' && value.trim()
+        }),
       )
       await updateApiKeys(payload)
       await loadKeys()
@@ -146,6 +152,13 @@ const AdminApiKeys = () => {
                     </Button>
                   )}
                 </Stack>
+                <TextField
+                  label="Blackbox Repo URL"
+                  value={form.blackbox_repo_url || ''}
+                  onChange={handleChange('blackbox_repo_url')}
+                  helperText="Task endpoint için repo URL"
+                  sx={inputSx}
+                />
               </Stack>
             </CardContent>
           </Card>

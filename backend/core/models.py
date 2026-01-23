@@ -239,6 +239,7 @@ class SiteSettings(models.Model):
     google_vision_api_key = models.CharField(max_length=200, blank=True)
     deepseek_api_key = models.CharField(max_length=200, blank=True)
     blackbox_api_key = models.CharField(max_length=200, blank=True)
+    blackbox_repo_url = models.CharField(max_length=300, blank=True)
     updated_at = models.DateTimeField(auto_now=True)
 
 

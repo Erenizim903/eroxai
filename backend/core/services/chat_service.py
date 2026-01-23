@@ -13,13 +13,14 @@ def get_chat_provider_settings():
                 'endpoints': {
                     'openai': site_settings.openai_endpoint or 'https://api.openai.com/v1/chat/completions',
                     'deepseek': site_settings.deepseek_endpoint or 'https://api.deepseek.com/v1/chat/completions',
-                    'blackbox': site_settings.blackbox_endpoint or 'https://www.blackbox.ai/api/chat',
+                    'blackbox': site_settings.blackbox_endpoint or 'https://cloud.blackbox.ai/api/tasks',
                 },
                 'keys': {
                     'openai': site_settings.openai_api_key or settings.OPENAI_API_KEY,
                     'deepseek': site_settings.deepseek_api_key or settings.OPENAI_API_KEY,
                     'blackbox': site_settings.blackbox_api_key or '',
                 },
+                'repo_url': site_settings.blackbox_repo_url or '',
             }
     except:
         pass
@@ -28,13 +29,14 @@ def get_chat_provider_settings():
         'endpoints': {
             'openai': 'https://api.openai.com/v1/chat/completions',
             'deepseek': 'https://api.deepseek.com/v1/chat/completions',
-            'blackbox': 'https://www.blackbox.ai/api/chat',
+            'blackbox': 'https://cloud.blackbox.ai/api/tasks',
         },
         'keys': {
             'openai': settings.OPENAI_API_KEY,
             'deepseek': settings.OPENAI_API_KEY,
             'blackbox': '',
         },
+        'repo_url': '',
     }
 
 
@@ -47,6 +49,7 @@ def chat_with_ai(message, language="tr", provider=None):
     active_provider = provider or provider_settings['provider']
     endpoint = provider_settings['endpoints'].get(active_provider, provider_settings['endpoints']['openai'])
     api_key = provider_settings['keys'].get(active_provider)
+    repo_url = provider_settings.get('repo_url', '')
     
     system_prompts = {
         "tr": "Sen EroxAI Studio platformunun yardımcı asistanısın. Kullanıcılara platform hakkında bilgi ver, OCR ve çeviri özelliklerini açıkla. Kısa, net ve yardımcı ol.",
@@ -62,7 +65,7 @@ def chat_with_ai(message, language="tr", provider=None):
         elif active_provider == 'deepseek':
             return _chat_deepseek(endpoint, message, system_prompt, api_key)
         elif active_provider == 'blackbox':
-            return _chat_blackbox(endpoint, message, system_prompt, api_key)
+            return _chat_blackbox(endpoint, message, system_prompt, api_key, repo_url)
         else:
             return _chat_openai(endpoint, message, system_prompt)
     except Exception as e:
@@ -123,27 +126,33 @@ def _chat_deepseek(endpoint, message, system_prompt, api_key):
     return data.get("choices", [{}])[0].get("message", {}).get("content", "Üzgünüm, bir hata oluştu.")
 
 
-def _chat_blackbox(endpoint, message, system_prompt, api_key=None):
+def _chat_blackbox(endpoint, message, system_prompt, api_key=None, repo_url=""):
     """Blackbox API çağrısı"""
+    if not api_key:
+        raise ValueError("BLACKBOX_API_KEY is missing")
+    prompt = f"{system_prompt}\n\nUser:\n{message}"
+    payload = {
+        "prompt": prompt,
+        "selectedAgent": "blackbox",
+        "selectedModel": "blackboxai/blackbox-pro",
+    }
+    if repo_url:
+        payload["repoUrl"] = repo_url
     response = requests.post(
         endpoint,
         headers={
             "Content-Type": "application/json",
-            **({"Authorization": f"Bearer {api_key}"} if api_key else {}),
+            "Authorization": f"Bearer {api_key}",
         },
-        json={
-            "messages": [
-                {"role": "system", "content": system_prompt},
-                {"role": "user", "content": message},
-            ],
-            "model": "gpt-3.5-turbo",
-            "stream": False,
-        },
+        json=payload,
         timeout=30,
     )
     response.raise_for_status()
     data = response.json()
-    # Blackbox farklı format dönebilir, kontrol et
+    if isinstance(data, dict):
+        for key in ("result", "response", "message", "output", "text"):
+            if key in data and isinstance(data[key], str) and data[key].strip():
+                return data[key]
     if isinstance(data, list) and len(data) > 0:
-        return data[0].get("message", {}).get("content", "Üzgünüm, bir hata oluştu.")
-    return data.get("message", {}).get("content", data.get("response", "Üzgünüm, bir hata oluştu."))
+        return str(data[0])
+    return "Üzgünüm, bir hata oluştu."
