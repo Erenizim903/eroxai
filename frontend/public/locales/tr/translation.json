@@ -1,4 +1,4 @@
-﻿{
+{
   "nav": {
     "home": "Ana Sayfa",
     "templates": "Şablonlar",
@@ -12,69 +12,69 @@
   },
   "home": {
     "hero": {
-      "title": "Profesyonel Belge OluÅŸturma Platformu",
-      "subtitle": "FiÅŸ, sÃ¶zleÅŸme, zehirli atÄ±k belgeleri ve tÃ¼m resmi evraklarÄ± hÄ±zlÄ±ca oluÅŸturun ve doldurun.",
-      "ctaPrimary": "Hemen BaÅŸla",
-      "ctaSecondary": "Daha FazlasÄ±",
-      "demo": "Ã–rnek AkÄ±ÅŸ",
-      "demoTitle": "Belge OluÅŸturma ve Doldurma",
-      "demoDesc": "Åablon seÃ§, alanlarÄ± doldur, Japonca formatÄ±nda profesyonel belge oluÅŸtur."
+      "title": "Profesyonel Belge Oluşturma Platformu",
+      "subtitle": "Fiş, sözleşme, zehirli atık belgeleri ve tüm resmi evrakları hızlıca oluşturun ve doldurun.",
+      "ctaPrimary": "Hemen Başla",
+      "ctaSecondary": "Daha Fazlası",
+      "demo": "Örnek Akış",
+      "demoTitle": "Belge Oluşturma ve Doldurma",
+      "demoDesc": "Şablon seç, alanları doldur, Japonca formatında profesyonel belge oluştur."
     },
     "features": {
-      "kicker": "Ã–zellikler",
-      "title": "Tek Platformda TÃ¼m Belge Ä°ÅŸlemleri",
-      "subtitle": "FiÅŸ, sÃ¶zleÅŸme, zehirli atÄ±k belgeleri ve daha fazlasÄ± tek Ã§atÄ± altÄ±nda.",
+      "kicker": "Özellikler",
+      "title": "Tek Platformda Tüm Belge İşlemleri",
+      "subtitle": "Fiş, sözleşme, zehirli atık belgeleri ve daha fazlası tek çatı altında.",
       "ocr": {
-        "title": "Belge ÅablonlarÄ±",
-        "desc": "HazÄ±r ÅŸablonlardan seÃ§ veya kendi ÅŸablonunu oluÅŸtur. PDF, Excel veya boÅŸ sayfa desteÄŸi."
+        "title": "Belge Şablonları",
+        "desc": "Hazır şablonlardan seç veya kendi şablonunu oluştur. PDF, Excel veya boş sayfa desteği."
       },
       "translate": {
-        "title": "Otomatik Japonca FormatÄ±",
-        "desc": "GirdiÄŸin tÃ¼m bilgiler otomatik olarak Japonca formata Ã§evrilir ve standart belgeler oluÅŸturulur."
+        "title": "Otomatik Japonca Formatı",
+        "desc": "Girdiğin tüm bilgiler otomatik olarak Japonca formata çevrilir ve standart belgeler oluşturulur."
       },
       "fast": {
-        "title": "HÄ±zlÄ± ve GÃ¼venli",
-        "desc": "Profesyonel belgeler anÄ±nda oluÅŸturulur. TÃ¼m veriler gÃ¼venli ÅŸekilde iÅŸlenir."
+        "title": "Hızlı ve Güvenli",
+        "desc": "Profesyonel belgeler anında oluşturulur. Tüm veriler güvenli şekilde işlenir."
       }
     },
     "steps": {
-      "kicker": "NasÄ±l Ã‡alÄ±ÅŸÄ±r?",
-      "title": "3 AdÄ±mda HazÄ±r",
-      "subtitle": "Premium key'inizle profesyonel belgeler oluÅŸturun.",
+      "kicker": "Nasıl Çalışır?",
+      "title": "3 Adımda Hazır",
+      "subtitle": "Premium key'inizle profesyonel belgeler oluşturun.",
       "step1": {
-        "label": "AdÄ±m 1",
-        "title": "Åablon SeÃ§",
-        "desc": "FiÅŸ, sÃ¶zleÅŸme, zehirli atÄ±k belgesi veya diÄŸer ÅŸablonlardan birini seÃ§."
+        "label": "Adım 1",
+        "title": "Şablon Seç",
+        "desc": "Fiş, sözleşme, zehirli atık belgesi veya diğer şablonlardan birini seç."
       },
       "step2": {
-        "label": "AdÄ±m 2",
-        "title": "AlanlarÄ± Doldur",
-        "desc": "Ä°htiyacÄ±n olan bilgileri gir. Sistem otomatik olarak Japonca formata dÃ¶nÃ¼ÅŸtÃ¼rÃ¼r."
+        "label": "Adım 2",
+        "title": "Alanları Doldur",
+        "desc": "İhtiyacın olan bilgileri gir. Sistem otomatik olarak Japonca formata dönüştürür."
       },
       "step3": {
-        "label": "AdÄ±m 3",
-        "title": "Belgeyi Ä°ndir",
-        "desc": "HazÄ±r belgeyi PDF veya Excel formatÄ±nda indir."
+        "label": "Adım 3",
+        "title": "Belgeyi İndir",
+        "desc": "Hazır belgeyi PDF veya Excel formatında indir."
       }
     },
     "contact": {
-      "kicker": "Ä°letiÅŸim",
-      "title": "Bize UlaÅŸÄ±n",
-      "subtitle": "Destek ve iÅŸ ortaklÄ±ÄŸÄ± iÃ§in iletiÅŸim bilgileri"
+      "kicker": "İletişim",
+      "title": "Bize Ulaşın",
+      "subtitle": "Destek ve iş ortaklığı için iletişim bilgileri"
     }
   },
   "workspace": {
-    "title": "Ã‡alÄ±ÅŸma AlanÄ±",
-    "subtitle": "OCR, Ã§eviri ve geÃ§miÅŸ iÅŸlemlerin tek yerde.",
+    "title": "Çalışma Alanı",
+    "subtitle": "OCR, çeviri ve geçmiş işlemlerin tek yerde.",
     "tabs": {
       "ocr": "OCR",
-      "translate": "Ã‡eviri",
-      "history": "GeÃ§miÅŸ",
+      "translate": "Çeviri",
+      "history": "Geçmiş",
       "settings": "Ayarlar"
     }
   },
   "footer": {
-    "tagline": "Profesyonel belge oluÅŸturma ve form doldurma platformu.",
-    "powered": "EroxAI Studio tarafÄ±ndan desteklenir."
+    "tagline": "Profesyonel belge oluşturma ve form doldurma platformu.",
+    "powered": "EroxAI Studio tarafından desteklenir."
   }
 }
