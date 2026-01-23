@@ -47,26 +47,35 @@ const presetPalettes = {
   emerald: { primary: '#10B981', secondary: '#06B6D4' },
 }
 
+const normalizeMode = (value) => (value === 'light' || value === 'dark' ? value : 'dark')
+const normalizePreset = (value) => (typeof value === 'string' && value.length ? value : 'ocean')
+const normalizeColor = (value) => (typeof value === 'string' && value.length ? value : null)
+
 export const getTheme = (mode = 'dark', preset = 'ocean', primaryColor = null, secondaryColor = null) => {
+  const safeMode = normalizeMode(mode)
+  const safePreset = normalizePreset(preset)
+  const safePrimary = normalizeColor(primaryColor)
+  const safeSecondary = normalizeColor(secondaryColor)
+
   let colors
-  if (primaryColor && secondaryColor) {
-    colors = { primary: primaryColor, secondary: secondaryColor }
+  if (safePrimary && safeSecondary) {
+    colors = { primary: safePrimary, secondary: safeSecondary }
   } else {
-    colors = presetPalettes[preset] || presetPalettes.ocean
+    colors = presetPalettes[safePreset] || presetPalettes.ocean
   }
   const theme = createTheme({
     palette: {
-      mode,
+      mode: safeMode,
       ...basePalette,
       primary: { main: colors.primary },
       secondary: { main: colors.secondary },
       background: {
-        default: mode === 'dark' ? '#0B1120' : '#F7F8FC',
-        paper: mode === 'dark' ? '#111827' : '#FFFFFF',
+        default: safeMode === 'dark' ? '#0B1120' : '#F7F8FC',
+        paper: safeMode === 'dark' ? '#111827' : '#FFFFFF',
       },
       text: {
-        primary: mode === 'dark' ? '#F9FAFB' : '#111827',
-        secondary: mode === 'dark' ? '#9CA3AF' : '#4B5563',
+        primary: safeMode === 'dark' ? '#F9FAFB' : '#111827',
+        secondary: safeMode === 'dark' ? '#9CA3AF' : '#4B5563',
       },
     },
     shape: {
