@@ -16,11 +16,14 @@ const defaultState = {
 }
 
 const storedState = loadJSON(STORAGE_KEYS.APP_STATE, {})
+const normalizeMode = (value) => (value === 'light' || value === 'dark' ? value : defaultState.mode)
+const normalizePreset = (value) => (typeof value === 'string' && value.length ? value : defaultState.themePreset)
+
 const initialState = {
   ...defaultState,
   ...storedState,
-  mode: storedState?.mode || defaultState.mode,
-  themePreset: storedState?.themePreset || defaultState.themePreset,
+  mode: normalizeMode(storedState?.mode),
+  themePreset: normalizePreset(storedState?.themePreset),
   settings: {
     ...defaultState.settings,
     ...(storedState?.settings || {}),
